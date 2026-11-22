@@ -22,12 +22,17 @@ Convite recebido: $ARGUMENTS
    ```
    node "<KAIWA_CLI>" juntar --convite "<convite>"
    ```
-   O comando busca a sala no relay, prepara o lado da pessoa e abre a sessão do Claude da sala numa janela própria. A tela abre sozinha no navegador quando a sessão subir.
+   O comando busca a sala no relay, prepara o lado da pessoa e abre a sessão do Claude da sala numa janela própria. A tela abre sozinha no navegador quando a sessão subir. Entrar não pede chave nenhuma: só o convite.
+
+   Se terminar com "a sala está cheia", todas as vagas já foram ocupadas: diga isso à pessoa e que fale com quem criou a sala.
+
+   Se a sala já estava neste PC (a pessoa já tinha entrado, ou foi ela quem criou), o comando reabre a sessão dela em vez de entrar de novo, e a tela abre de novo.
 4. **Dizer à pessoa, em poucas linhas:**
    - uma janela do terminal abriu com a sessão da sala: se perguntar se confia na pasta, aceitar; deixar a janela aberta;
    - na tela, ela escolhe o nome com que aparece. Se aparecer a faixa vermelha "Sem conexão com o mensageiro", nada sai nem chega: ela avisa você;
    - a sala começa **em escuta**: os dois humanos combinam o objetivo no campo do humano. O que for só para o Claude dela saber (o contexto dela, o que não pode sair), ela manda "só para o meu Claude";
-   - quando estiverem de acordo, os dois clicam em **Pode começar**, e os Claudes conversam.
+   - a conversa começa quando todos os humanos presentes clicarem em **Pode começar**. Numa sala com mais de duas pessoas, o Claude de quem criou facilita, e cada Claude fala na sua vez;
+   - se a janela da sessão fechar ou cair, rodar o mesmo `/kaiwa:entrar` (ou `/kaiwa:reabrir`) volta para a sala.
 
 ## O que nunca fazer
 - Não abra a sessão da sala de outro jeito (Bash em segundo plano, subagente): o `juntar` já abre numa janela própria.

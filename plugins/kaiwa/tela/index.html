@@ -53,6 +53,7 @@
           <strong id="nome-outro"></strong>
           <span class="apoio peq"><span class="ponto" id="vivo-outro"></span><span id="estado-outro"></span></span>
         </div>
+        <button class="btn btn-fantasma btn-sm" id="abrir-pessoas" type="button" hidden>Pessoas</button>
         <button class="chat-voce" id="mudar-nome" type="button" title="Mudar o seu nome na sala">
           <span class="ponto" id="vivo-eu"></span>
           <span class="apoio peq" id="estado-eu"></span>
@@ -69,8 +70,8 @@
       </button>
       <div class="chat-cartoes" id="cartoes">
         <section class="cartao-sala" id="cartao-convite" hidden>
-          <span class="rotulo">Convide o outro lado</span>
-          <p>Mande este comando para a outra pessoa. Ela cola no Claude Code dela e entra na sala. <b>É uma senha:</b> use um canal em que vocês confiam.</p>
+          <span class="rotulo" id="convite-rotulo">Convide o outro lado</span>
+          <p><span id="convite-texto">Mande este comando para a outra pessoa. Ela cola no Claude Code dela e entra na sala.</span> <b>É uma senha:</b> use um canal em que vocês confiam.</p>
           <div class="comando">
             <code class="mono" id="comando-convite"></code>
             <button class="btn btn-escuro btn-sm" id="copiar-convite" type="button">Copiar</button>
@@ -79,7 +80,7 @@
         </section>
         <section class="cartao-sala" id="cartao-escuta" hidden>
           <span class="rotulo">A sala está em escuta</span>
-          <p>Os Claudes leem tudo, mas ainda não falam. Combinem o objetivo no campo do humano: cada um conta a sua visão. O que for só para o seu Claude saber, mande "só para o meu Claude". Quando estiverem de acordo, os dois clicam em <b>Pode começar</b>.</p>
+          <p>Os Claudes leem tudo, mas ainda não falam. Combinem o objetivo no campo do humano: cada um conta a sua visão. O que for só para o seu Claude saber, mande "só para o meu Claude". Quando estiverem de acordo, cada um clica em <b>Pode começar</b>: a conversa começa quando todos da sala clicarem.</p>
           <div class="prontos" id="prontos"></div>
           <div class="acoes">
             <button class="btn btn-acento" id="pode-comecar" type="button">Pode começar</button>
@@ -123,7 +124,7 @@
         <div>
           <span class="rotulo" id="gaveta-rotulo">Esperando por você</span>
           <h2 id="gaveta-titulo">Pendências</h2>
-          <p class="apoio peq">Só você resolve. Enquanto uma pendência espera, o seu Claude não segue com aquilo. As conjuntas aparecem nos dois lados.</p>
+          <p class="apoio peq">Só você resolve. Enquanto uma pendência espera, o seu Claude não segue com aquilo. As conjuntas aparecem para todos da sala.</p>
           <div class="segmentos gaveta-abas" id="abas-pend" role="tablist" aria-label="Pendências">
             <button type="button" data-valor="esperando" aria-pressed="true">Esperando <span class="mono" id="n-esperando">0</span></button>
             <button type="button" data-valor="historico" aria-pressed="false">Histórico <span class="mono" id="n-historico">0</span></button>
@@ -141,17 +142,37 @@
     <form method="dialog">
       <span class="pend-icone" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6v12M15 6v12"/></svg></span>
       <h2 id="pausa-titulo">Pausar a conversa?</h2>
-      <p class="apoio">Os dois Claudes param de falar até você retomar. Nada se perde: quando você religar, a conversa segue de onde parou.</p>
+      <p class="apoio">Os Claudes param de falar até você retomar. Nada se perde: quando você religar, a conversa segue de onde parou.</p>
       <div class="acoes">
         <button class="btn btn-fantasma" value="nao" autofocus>Deixar conversando</button>
         <button class="btn btn-escuro" value="sim">Pausar</button>
       </div>
     </form>
   </dialog>
+  <dialog class="confirmar" id="pessoas-dialogo" aria-labelledby="pessoas-titulo">
+    <form method="dialog">
+      <h2 id="pessoas-titulo">Pessoas na sala</h2>
+      <p class="apoio" id="pessoas-apoio"></p>
+      <ul class="pessoas" id="pessoas-lista"></ul>
+      <div class="acoes">
+        <button class="btn btn-fantasma" value="fechar">Fechar</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog class="confirmar" id="confirmar-remover" aria-labelledby="remover-titulo">
+    <form method="dialog">
+      <h2 id="remover-titulo">Tirar da sala?</h2>
+      <p class="apoio" id="remover-texto"></p>
+      <div class="acoes">
+        <button class="btn btn-fantasma" value="nao" autofocus>Cancelar</button>
+        <button class="btn btn-escuro" value="sim">Tirar da sala</button>
+      </div>
+    </form>
+  </dialog>
   <dialog class="confirmar" id="nome-dialogo" aria-labelledby="nome-titulo">
     <form method="dialog" id="form-nome">
       <h2 id="nome-titulo">Como você quer aparecer na sala?</h2>
-      <p class="apoio">O outro lado e os dois Claudes vão ver este nome.</p>
+      <p class="apoio">As outras pessoas e os Claudes da sala vão ver este nome.</p>
       <input class="campo" id="nome-campo" maxlength="60" required placeholder="Ex.: Léo, ou Padaria Trigo Bom" autocomplete="off">
       <div class="acoes">
         <button class="btn btn-acento" value="ok">Entrar na sala</button>

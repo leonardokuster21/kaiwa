@@ -1,6 +1,6 @@
 ---
 name: sala
-description: Conduz a conversa desta sala com o Claude do outro lado, do começo à ata, usando as ferramentas do conector (falar, aguardar, definir_objetivo, pedir_decisao, propor_conclusao, encerrar, estado, historico). Usar quando o humano digitar /sala ou pedir para começar, continuar ou fechar a conversa da sala.
+description: Conduz a conversa desta sala com o Claude do outro lado (ou os Claudes de várias pessoas), do começo à ata, usando as ferramentas do conector (falar, aguardar, definir_objetivo, pedir_decisao, propor_conclusao, encerrar, estado, historico). Usar quando o humano digitar /sala ou pedir para começar, continuar ou fechar a conversa da sala.
 ---
 
 # /sala: a conversa com o outro Claude
@@ -14,13 +14,26 @@ Você está numa sessão aberta só para esta sala. O que você sabe está no `C
    - as mensagens "só para você" (`humano_privado`) são o que o seu humano quer que você saiba: o contexto dele, o que importa, o que não pode sair. Trate como o seu dossiê;
    - o nome que cada humano escolheu chega como apresentação.
 3. Se a sessão reiniciou ou você perdeu o fio, chame `historico`.
-4. Quando o conector avisar que **os dois liberaram a conversa**, siga para a primeira fala.
+4. Quando o conector avisar que **os humanos liberaram a conversa**, siga para a primeira fala (na sala de várias pessoas, veja a seção abaixo).
 
 ## A primeira fala
 1. Você só sabe o que está no `CLAUDE.md` e no que foi dito na sala: não invente número, nome nem fato.
 2. **Se é você quem abre:** primeiro registre o objetivo combinado com `definir_objetivo` (uma ou duas frases, como os humanos disseram). Depois apresente-se em duas linhas (de quem você é o Claude e o que traz, sem conteúdo proibido) e proponha uma pauta curta, de 2 a 4 pontos. Use `falar`.
 3. **Se é o outro lado que abre:** espere. No modo channel, termine o turno. No modo aguardar, chame `aguardar`.
 4. Se os humanos mudarem o objetivo no meio da conversa, registre o novo com `definir_objetivo`.
+
+## Sala de várias pessoas (1.1)
+Quando o conector disser que a sala é de várias pessoas, valem estas regras. Elas vêm do estudo sobre conversa entre muitos agentes: reunião entre agentes gera conformismo; opiniões independentes e uma síntese rendem mais.
+1. **A rodada às cegas.** Quando a conversa começa, cada Claude dá a **própria visão** sobre o objetivo com `falar`, sem esperar a dos outros: as primeiras falas dos outros só chegam depois da sua. Diga o que o seu lado sabe, precisa e propõe, em poucas linhas.
+2. **Se você facilita** (o Claude de quem criou a sala):
+   - antes da sua visão, registre o objetivo com `definir_objetivo`;
+   - a sua primeira fala é a sua visão, como a de todos, e não uma instrução;
+   - quando chegarem as visões, faça a **síntese**: onde concordam, onde divergem, o que falta decidir;
+   - conduza por rodadas: abra cada uma com uma pergunta. Para ouvir só alguns, ponha os nomes no campo `para` de `falar`;
+   - não espere parado: se alguém disse que vai consultar o próprio humano, siga com o que já dá para decidir. Se vier "Nada novo" com a conversa parada, é você quem retoma;
+   - proponha a ata quando houver acordo, ou quando as divergências estiverem claras, deixando o que falta como próximo passo.
+3. **Se você não facilita:** fale uma vez a cada rodada que o facilitador abrir, e só se ele chamou todos ou você. Se o conector recusar a fala ("já falou nesta rodada", "chamou só..."), espere: não insista. Quando o seu humano trouxer algo novo (a resposta que você pediu, uma informação), você pode falar de novo.
+4. **Não responda a todos sobre tudo.** Traga o que só o seu lado sabe. Concordar sem acrescentar nada não ajuda; discordar com motivo ajuda.
 
 ## Durante a conversa
 - **Só `falar` chega ao outro lado.** O que você escreve no terminal fica aqui.
@@ -39,9 +52,9 @@ Você está numa sessão aberta só para esta sala. O que você sabe está no `C
 - Antes de propor a ata, confira cada item do objetivo: o que foi atendido e o que não foi.
 - **Não proponha a ata com decisão de humano em aberto**, do seu lado ou do outro. Se o outro Claude disse que levou algo ao humano dele, espere a resposta chegar. O conector recusa a ata enquanto houver pendência do seu humano.
 - **A ata**, com `propor_conclusao`, tem quatro partes curtas:
-  1. **Acordo:** o que os dois lados concluíram.
+  1. **Acordo:** o que os lados concluíram.
   2. **Divergências:** onde não houve acordo e por quê.
   3. **Próximos passos:** quem faz o quê; o que depende dos humanos.
-  4. **O que foi compartilhado:** em uma linha por lado, que tipo de informação cada um trouxe.
-- Os dois humanos aprovam a ata no painel. Se um recusar, leia o motivo e continue.
+  4. **O que foi compartilhado:** em uma linha por participante, que tipo de informação cada um trouxe.
+- Os humanos aprovam a ata no painel: na sala de duas, os dois; na de várias, todos os presentes. Se um recusar, leia o motivo e continue.
 - Quando o conector disser que a sala está concluída ou encerrada, pare de falar.
