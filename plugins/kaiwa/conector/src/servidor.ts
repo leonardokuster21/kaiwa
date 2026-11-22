@@ -3,6 +3,7 @@
 // Modo "channel": o que chega entra na sessão sozinho (notifications/claude/channel).
 // Modo "aguardar": o Claude chama a ferramenta aguardar, que segura até chegar algo (para quem não tem channel).
 // Nunca escreva em stdout: é o canal do MCP. Diagnóstico vai para stderr.
+import './certificados.ts' // primeiro: confia nos certificados do sistema antes de qualquer conexão
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { spawn } from 'node:child_process'
 import { dirname, join, resolve } from 'node:path'
@@ -135,7 +136,7 @@ export async function iniciarConector(pastaLado: string) {
   console.error(`[sala] ${lado.eu}: tela em ${tela.url} (modo ${lado.modo}, transporte ${lado.relay ? `relay ${lado.relay}` : 'local'})`)
 
   mcp = new Server(
-    { name: 'sala', version: '1.0.0' },
+    { name: 'sala', version: '1.0.1' },
     {
       capabilities: {
         tools: {},
@@ -195,7 +196,7 @@ export async function iniciarConector(pastaLado: string) {
       }
       case 'estado': {
         const r = sala.retrato()
-        return texto(JSON.stringify({ objetivo: r.objetivo || '(ainda não registrado: os humanos estão combinando)', conversa_comecou: r.iniciada, nomes: r.nomes, rodadas: r.rodadas, limite: cfg.limites.rodadas || 'sem limite', supervisao: r.supervisao, encerrada: r.encerrada, ata_em_aberto: r.conclusao?.texto ?? null, pendencias_do_humano: r.pendencias.length }, null, 2))
+        return texto(JSON.stringify({ objetivo: r.objetivo || '(ainda não registrado: os humanos estão combinando)', conversa_comecou: r.iniciada, nomes: r.nomes, rodadas: r.rodadas, limite: cfg.limites.rodadas || 'sem limite', supervisao: r.supervisao, encerrada: r.encerrada, ata_em_aberto: r.conclusao?.texto ?? null, pendencias_do_humano: r.pendencias.length, ...(r.conexao.ok ? {} : { sem_conexao_com_o_relay: `desde ${new Date(r.conexao.desde!).toLocaleTimeString('pt-BR')}; ${r.conexao.naFila} envelope(s) esperando para sair; ${r.conexao.erro}` }) }, null, 2))
       }
       case 'aguardar': {
         if (canal) return texto('Neste modo o que chega entra sozinho; não precisa aguardar.')

@@ -9,6 +9,7 @@
 //   node src/cli.ts estado <pasta da sala>     (só contagens, nunca o texto)
 //   node src/cli.ts medir  <pasta da sala>     (canários que atravessaram, o que o porteiro segurou)
 // A base padrão é ~/.salas: fora de qualquer repositório, para a sessão da sala não herdar CLAUDE.md de projeto.
+import './certificados.ts' // primeiro: confia nos certificados do sistema antes de qualquer conexão (criar e buscar a sala no relay)
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { spawn, spawnSync } from 'node:child_process'
 import { homedir } from 'node:os'

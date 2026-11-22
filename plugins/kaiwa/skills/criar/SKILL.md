@@ -14,7 +14,7 @@ Você está na sessão normal da pessoa. Aqui você **só cria a sala**: tudo o 
    ```
    A última linha traz `KAIWA_CLI=<caminho>`. Se falhar:
    - Node antigo: peça o Node 24 ou mais novo (https://nodejs.org) e rode de novo.
-   - Erro `SELF_SIGNED_CERT_IN_CHAIN` (rede que inspeciona TLS): rode de novo com a variável `NODE_OPTIONS=--use-system-ca` no ambiente. Nunca desligue a verificação de certificado.
+   - Erro `SELF_SIGNED_CERT_IN_CHAIN` (rede que inspeciona TLS) na instalação: rode de novo com a variável `NODE_OPTIONS=--use-system-ca` no ambiente. Nunca desligue a verificação de certificado. Depois de instalado, o Kaiwa já confia sozinho nos certificados do sistema (1.0.1).
 2. **Criar a sala:**
    ```
    node "<KAIWA_CLI>" nova --relay https://kaiwa-relay.pages.dev

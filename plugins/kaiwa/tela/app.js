@@ -29,6 +29,14 @@ async function postar(caminho, corpo) {
   if (!r.ok) alertaFaixa(`Falhou: ${r.status}`)
 }
 
+/** O aviso de quando o conector não fala com o mensageiro: sem ele, cada lado parecia funcionar sozinho (achado de 22/11/2026). */
+function semConexao(c) {
+  const desde = c.desde ? ` desde ${new Date(c.desde).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''
+  const fila = c.naFila ? ` ${c.naFila === 1 ? '1 mensagem espera' : `${c.naFila} mensagens esperam`} para sair.` : ''
+  const certificado = /CERT|SSL|TLS/i.test(c.erro || '') ? ' O certificado do mensageiro foi recusado: talvez um antivírus ou proxy esteja inspecionando a conexão.' : ''
+  return `Sem conexão com o mensageiro${desde}: o outro lado não recebe o que você manda, e nada chega dele.${fila} Tentando de novo a cada 3 segundos.${certificado}`
+}
+
 function alertaFaixa(t) {
   const f = $('#faixa')
   f.textContent = t
@@ -391,6 +399,10 @@ function pintar(r) {
   if (r.encerrada) {
     f.textContent = `Sala encerrada: ${r.encerrada}`
     f.className = 'faixa fim'
+    f.hidden = false
+  } else if (r.conexao && !r.conexao.ok) {
+    f.textContent = semConexao(r.conexao)
+    f.className = 'faixa'
     f.hidden = false
   } else if (r.supervisao === 'pausado') {
     f.textContent = 'Sala pausada: os Claudes não falam até você retomar.'

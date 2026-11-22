@@ -11,7 +11,26 @@ export interface Transporte {
   iniciar(aoReceber: (e: Envelope) => void): void
   /** Sinal de vida: quando cada participante deu notícia pela última vez. */
   vivos(): Record<string, number>
+  /** Se o transporte está conseguindo falar com o outro lado (só o relay tem o que dizer aqui). */
+  conexao?(): Conexao
   parar(): void
+}
+
+/** O estado da ligação com o relay, para a tela avisar o humano quando nada sai nem chega. */
+export interface Conexao {
+  ok: boolean
+  /** O motivo da última falha, com o código do erro de rede quando houver (ex.: SELF_SIGNED_CERT_IN_CHAIN). */
+  erro?: string
+  /** Desde quando está falhando (ms). */
+  desde?: number
+  /** Envelopes esperando para sair. */
+  naFila: number
+}
+
+function descreverErro(e: unknown): string {
+  const err = e as Error & { cause?: { code?: string; message?: string; errors?: { code?: string }[] } }
+  const motivo = err.cause?.code ?? err.cause?.errors?.[0]?.code ?? err.cause?.message
+  return motivo ? `${err.message} (${motivo})` : err.message
 }
 
 /** Cada participante escreve só no próprio arquivo `<id>.jsonl` e lê os dos outros. Nada é apagado. */
@@ -93,6 +112,7 @@ export class TransporteRelay implements Transporte {
   private ativo = false
   private ctrl = new AbortController()
   private bombeando = false
+  private falha: { erro: string; desde: number } | null = null
 
   constructor(url: string, sala: string, eu: string, acesso: string) {
     this.url = url.replace(/\/+$/, '')
@@ -103,6 +123,12 @@ export class TransporteRelay implements Transporte {
 
   private get base() {
     return `${this.url}/salas/${this.sala}`
+  }
+
+  private falhou(e: unknown) {
+    const erro = descreverErro(e)
+    this.falha = { erro, desde: this.falha?.desde ?? Date.now() }
+    return erro
   }
 
   private cabecalhos(extra: Record<string, string> = {}) {
@@ -124,10 +150,11 @@ export class TransporteRelay implements Transporte {
           if (r.ok || (r.status >= 400 && r.status < 500 && r.status !== 429)) {
             if (!r.ok) console.error(`[sala] relay recusou um envelope: ${r.status} ${await r.text()}`)
             this.fila.shift()
+            this.falha = null
           } else throw new Error(`relay ${r.status}`)
         } catch (e) {
           if (this.ctrl.signal.aborted) return
-          console.error('[sala] relay fora do ar; tento de novo em 3 s:', (e as Error).message)
+          console.error('[sala] relay fora do ar; tento de novo em 3 s:', this.falhou(e))
           await new Promise(ok => setTimeout(ok, 3000))
         }
       }
@@ -147,9 +174,10 @@ export class TransporteRelay implements Transporte {
           for (const e of d.envelopes) aoReceber(e)
           this.cursor = Math.max(this.cursor, d.ultimo)
           this.ultimosVivos = d.vivos
+          if (!this.fila.length) this.falha = null
         } catch (e) {
           if (!this.ativo) return
-          console.error('[sala] não consegui receber do relay; tento de novo em 3 s:', (e as Error).message)
+          console.error('[sala] não consegui receber do relay; tento de novo em 3 s:', this.falhou(e))
           await new Promise(ok => setTimeout(ok, 3000))
         }
       }
@@ -159,6 +187,10 @@ export class TransporteRelay implements Transporte {
 
   vivos(): Record<string, number> {
     return this.ultimosVivos
+  }
+
+  conexao(): Conexao {
+    return this.falha ? { ok: false, erro: this.falha.erro, desde: this.falha.desde, naFila: this.fila.length } : { ok: true, naFila: this.fila.length }
   }
 
   parar(): void {

@@ -31,4 +31,6 @@ Na primeira vez, o Kaiwa instala as dependências dele (o SDK do MCP) na pasta d
 - **O seu Claude só sabe o que você disser a ele** ("só para o meu Claude") e o que for dito na sala. Conte só o que ele precisa para a conversa.
 
 ## Rede que inspeciona TLS
-Se aparecer `SELF_SIGNED_CERT_IN_CHAIN`, defina `NODE_OPTIONS=--use-system-ca` no terminal (para a instalação e para a sessão da sala). Não desligue a verificação de certificado.
+Antivírus com escaneamento HTTPS e proxies de empresa trocam o certificado dos sites por um deles. Desde a 1.0.1, o Kaiwa confia nos certificados do sistema, como o navegador, e a sala funciona sem nada a fazer. Se a instalação parar em `SELF_SIGNED_CERT_IN_CHAIN`, defina `NODE_OPTIONS=--use-system-ca` no terminal e instale de novo. Não desligue a verificação de certificado.
+
+Se a tela mostrar a faixa "Sem conexão com o mensageiro", o que você manda não sai e nada chega do outro lado; a faixa diz desde quando e quantas mensagens esperam.

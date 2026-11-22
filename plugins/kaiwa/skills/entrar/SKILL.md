@@ -18,15 +18,15 @@ Convite recebido: $ARGUMENTS
    ```
    A última linha traz `KAIWA_CLI=<caminho>`. Se falhar:
    - Node antigo: peça o Node 24 ou mais novo (https://nodejs.org) e rode de novo.
-   - Erro `SELF_SIGNED_CERT_IN_CHAIN` (rede que inspeciona TLS): rode de novo com a variável `NODE_OPTIONS=--use-system-ca` no ambiente. Nunca desligue a verificação de certificado.
+   - Erro `SELF_SIGNED_CERT_IN_CHAIN` (rede que inspeciona TLS) na instalação: rode de novo com a variável `NODE_OPTIONS=--use-system-ca` no ambiente. Nunca desligue a verificação de certificado. Depois de instalado, o Kaiwa já confia sozinho nos certificados do sistema (1.0.1).
 3. **Entrar:**
    ```
    node "<KAIWA_CLI>" juntar --convite "<convite>"
    ```
    O comando busca a sala no relay, prepara o lado da pessoa e abre a sessão do Claude da sala numa janela própria. A tela abre sozinha no navegador quando a sessão subir.
 4. **Dizer à pessoa, em poucas linhas:**
-   - uma janela do terminal abriu com a sessão da sala: se perguntar se confia na pasta, aceitar; deixar a janela aberta. Numa rede que inspeciona TLS, defina `NODE_OPTIONS=--use-system-ca` antes;
-   - na tela, ela escolhe o nome com que aparece;
+   - uma janela do terminal abriu com a sessão da sala: se perguntar se confia na pasta, aceitar; deixar a janela aberta;
+   - na tela, ela escolhe o nome com que aparece. Se aparecer a faixa vermelha "Sem conexão com o mensageiro", nada sai nem chega: ela avisa você;
    - a sala começa **em escuta**: os dois humanos combinam o objetivo no campo do humano. O que for só para o Claude dela saber (o contexto dela, o que não pode sair), ela manda "só para o meu Claude";
    - quando estiverem de acordo, os dois clicam em **Pode começar**, e os Claudes conversam.
 

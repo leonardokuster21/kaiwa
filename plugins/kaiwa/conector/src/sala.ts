@@ -468,6 +468,7 @@ export class Sala extends EventEmitter {
       iniciada: this.iniciada,
       objetivo: this.objetivoCombinado || this.config.objetivo,
       vivos: this.o.transporte.vivos(),
+      conexao: this.o.transporte.conexao?.() ?? { ok: true, naFila: 0 },
       encerrada: this.encerrada,
       conclusao: this.conclusao ? { ref: this.conclusao.ref, texto: this.conclusao.texto, aceites: [...this.conclusao.aceites] } : null,
       descartados: this.descartados,
