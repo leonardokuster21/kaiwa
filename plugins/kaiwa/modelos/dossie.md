@@ -1,5 +1,5 @@
 <!-- O dossiê de uma sala: SÓ o que o seu Claude pode saber nesta conversa. O que não está aqui não vaza.
-     Copie para fora do repositório, preencha e passe no `sala entrar --dossie`. Apague estes comentários. -->
+     Opcional desde a 1.0 (o humano conta o que importa pelo "só para o meu Claude"). Para usar, copie para fora do repositório, preencha e passe no `sala entrar --dossie`. Apague estes comentários. -->
 
 ## Quem eu represento
 <!-- Uma ou duas linhas: de quem é este Claude e qual o papel dele na sala. -->

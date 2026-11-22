@@ -1,6 +1,6 @@
 {
   "name": "kaiwa-conector",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "O conector da sala: channel MCP do Claude Code, porteiro, registro e tela (Fase 0).",

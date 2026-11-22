@@ -4,69 +4,172 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sala</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23141416'/%3E%3Cpath d='M9 11h10a3 3 0 0 1 3 3v3a3 3 0 0 1-3 3h-5l-4 3v-3a3 3 0 0 1-1-2v-4a3 3 0 0 1 3-3Z' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="/estilo.css">
 </head>
 <body>
   <header class="topo">
-    <div class="titulo">
-      <strong id="projeto">Sala</strong>
-      <span id="sala-id" class="fraco"></span>
+    <div class="marca">
+      <span class="marca-simbolo" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M5 6h11a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-6l-4.5 3.5V16A3 3 0 0 1 3 13V9a3 3 0 0 1 2-3Z"/></svg>
+      </span>
+      <span class="marca-nome" id="projeto">Sala</span>
+      <span class="tag mono" id="sala-id"></span>
     </div>
-    <p id="objetivo" class="objetivo"></p>
-    <div class="controles">
-      <label>Supervisão
-        <select id="supervisao">
-          <option value="livre">livre, com porteiro</option>
-          <option value="aprovar">aprovo cada fala</option>
-          <option value="pausado">pausada</option>
-        </select>
+    <div class="topo-direita">
+      <label class="interruptor" title="Conversando: os Claudes estão falando. Pausado: ninguém fala até você retomar.">
+        <input type="checkbox" id="rodando" role="switch" checked>
+        <span class="trilho" aria-hidden="true"><span class="bolinha"></span></span>
+        <span class="interruptor-rotulo" id="rotulo-rodando">Conversando</span>
       </label>
-      <span id="modo" class="etiqueta"></span>
-      <button id="encerrar" class="perigo" type="button">Encerrar a sala</button>
+      <button id="abrir-pend" class="btn btn-fantasma btn-sm btn-pend" type="button" aria-controls="gaveta" aria-expanded="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 20a2 2 0 0 0 3.4 0"/></svg>
+        Pendências <span id="n-pend" class="contador">0</span>
+      </button>
+      <button id="encerrar" class="btn btn-perigo btn-sm" type="button">Encerrar</button>
     </div>
   </header>
 
   <div id="faixa" class="faixa" hidden></div>
 
-  <main class="grade">
-    <section class="terminais" aria-label="A conversa">
-      <article class="terminal" id="term-eu">
-        <header><span class="ponto" data-vivo></span><span class="nome"></span><span class="rodada fraco"></span></header>
-        <ol class="linhas"></ol>
-      </article>
-      <article class="terminal" id="term-outro">
-        <header><span class="ponto" data-vivo></span><span class="nome"></span><span class="rodada fraco"></span></header>
-        <ol class="linhas"></ol>
-      </article>
+  <main class="principal">
+    <aside class="ata-lateral" aria-label="A ata">
+      <header>
+        <div class="ata-titulo">
+          <h2>Ata</h2>
+          <span class="tag" id="ata-estado">sem proposta</span>
+        </div>
+        <div class="ata-aceites" id="ata-aceites"></div>
+      </header>
+      <div class="ata-corpo" id="ata-corpo"></div>
+      <button class="btn btn-acento btn-sm ata-responder" id="ata-responder" type="button" hidden>Responder à proposta</button>
+    </aside>
+
+    <section class="chat" aria-label="A conversa">
+      <header class="chat-topo">
+        <span class="avatar" id="av-outro"></span>
+        <div class="chat-quem">
+          <strong id="nome-outro"></strong>
+          <span class="apoio peq"><span class="ponto" id="vivo-outro"></span><span id="estado-outro"></span></span>
+        </div>
+        <button class="chat-voce" id="mudar-nome" type="button" title="Mudar o seu nome na sala">
+          <span class="ponto" id="vivo-eu"></span>
+          <span class="apoio peq" id="estado-eu"></span>
+        </button>
+      </header>
+
+      <div class="chat-objetivo">
+        <span class="rotulo">Objetivo</span>
+        <span id="objetivo"></span>
+      </div>
+
+      <button class="aviso-pend" id="aviso-pend" type="button" hidden>
+        <span class="ponto vivo"></span>
+        <span id="aviso-pend-texto"></span>
+        <span class="aviso-pend-ver">Ver pendências →</span>
+      </button>
+
+      <div class="chat-cartoes" id="cartoes">
+        <section class="cartao-sala" id="cartao-convite" hidden>
+          <span class="rotulo">Convide o outro lado</span>
+          <p>Mande este comando para a outra pessoa. Ela cola no Claude Code dela e entra na sala. <b>É uma senha:</b> use um canal em que vocês confiam.</p>
+          <div class="comando">
+            <code class="mono" id="comando-convite"></code>
+            <button class="btn btn-escuro btn-sm" id="copiar-convite" type="button">Copiar</button>
+          </div>
+          <p class="apoio peq">Ela precisa do plugin: <span class="mono">/plugin install kaiwa --marketplace leonardokuster21/kaiwa</span></p>
+        </section>
+        <section class="cartao-sala" id="cartao-escuta" hidden>
+          <span class="rotulo">A sala está em escuta</span>
+          <p>Os Claudes leem tudo, mas ainda não falam. Combinem o objetivo no campo do humano: cada um conta a sua visão. O que for só para o seu Claude saber, mande "só para o meu Claude". Quando estiverem de acordo, os dois clicam em <b>Pode começar</b>.</p>
+          <div class="prontos" id="prontos"></div>
+          <div class="acoes">
+            <button class="btn btn-acento" id="pode-comecar" type="button">Pode começar</button>
+          </div>
+        </section>
+      </div>
+
+      <ol class="mensagens" id="mensagens"></ol>
+
     </section>
 
-    <aside class="painel" aria-label="Pendências">
-      <h2>Pendências <span id="n-pend" class="contador">0</span></h2>
-      <p class="fraco pequeno">Só você resolve. As conjuntas aparecem nos dois lados.</p>
-      <ol id="pendencias" class="pendencias"></ol>
-    </aside>
+    <section class="chat chat-humano" aria-label="Campo do humano">
+      <header class="chat-topo">
+        <div class="chat-quem">
+          <strong>Campo do humano</strong>
+          <span class="apoio peq">O que você escrever aqui vale mais que qualquer fala dos Claudes.</span>
+        </div>
+      </header>
+      <ol class="mensagens" id="humanos"></ol>
+      <form class="compositor" id="form-humano" aria-label="Campo do humano">
+        <div class="compositor-opcoes">
+          <div class="segmentos" id="destino" role="group" aria-label="Para quem">
+            <button type="button" data-valor="sala" aria-pressed="true">Para a sala</button>
+            <button type="button" data-valor="meu" aria-pressed="false">Só para o meu Claude</button>
+          </div>
+        </div>
+        <p class="ouvindo" id="ouvindo" hidden><span class="ponto vivo"></span> Ouvindo… clique no microfone de novo para parar. O texto fica na caixa para você revisar. A voz é transcrita pelo serviço do navegador (no Chrome, o Google); o áudio não vai para a sala.</p>
+        <div class="compositor-linha">
+          <textarea id="texto-humano" class="campo" rows="1" placeholder="Escreva para os Claudes…" required></textarea>
+          <button type="button" class="btn btn-fantasma btn-redondo" id="microfone" aria-label="Falar em vez de digitar" title="Falar em vez de digitar (a voz é transcrita pelo serviço do navegador)" hidden>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          </button>
+          <button type="submit" class="btn btn-escuro btn-enviar" aria-label="Enviar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </form>
+    </section>
+
   </main>
 
-  <section class="humano" aria-label="Campo do humano">
-    <h2>Campo do humano <span class="fraco pequeno">regras e decisões, fora do papo</span></h2>
-    <ol id="decisoes" class="decisoes"></ol>
-    <form id="form-humano">
-      <div class="linha-form">
-        <select id="categoria" aria-label="Tipo">
-          <option value="regra">Regra</option>
-          <option value="decisao">Decisão</option>
-        </select>
-        <select id="destino" aria-label="Para quem">
-          <option value="sala">para a sala (os dois lados veem)</option>
-          <option value="meu">só para o meu Claude</option>
-        </select>
-      </div>
-      <div class="linha-form">
-        <textarea id="texto-humano" rows="2" placeholder="Ex.: decidimos usar a opção B; não falem de preço" required></textarea>
-        <button type="submit">Enviar</button>
+  <div class="gaveta" id="gaveta" hidden>
+    <div class="gaveta-fundo" data-fechar></div>
+    <aside class="gaveta-painel" role="dialog" aria-modal="true" aria-labelledby="gaveta-titulo">
+      <header class="gaveta-topo">
+        <div>
+          <span class="rotulo" id="gaveta-rotulo">Esperando por você</span>
+          <h2 id="gaveta-titulo">Pendências</h2>
+          <p class="apoio peq">Só você resolve. Enquanto uma pendência espera, o seu Claude não segue com aquilo. As conjuntas aparecem nos dois lados.</p>
+          <div class="segmentos gaveta-abas" id="abas-pend" role="tablist" aria-label="Pendências">
+            <button type="button" data-valor="esperando" aria-pressed="true">Esperando <span class="mono" id="n-esperando">0</span></button>
+            <button type="button" data-valor="historico" aria-pressed="false">Histórico <span class="mono" id="n-historico">0</span></button>
+          </div>
+        </div>
+        <button class="btn btn-leve btn-icone" type="button" data-fechar aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </header>
+      <div class="gaveta-corpo" id="pendencias"></div>
+      <div class="gaveta-corpo" id="historico" hidden></div>
+    </aside>
+  </div>
+
+  <dialog class="confirmar" id="confirmar-pausa" aria-labelledby="pausa-titulo">
+    <form method="dialog">
+      <span class="pend-icone" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6v12M15 6v12"/></svg></span>
+      <h2 id="pausa-titulo">Pausar a conversa?</h2>
+      <p class="apoio">Os dois Claudes param de falar até você retomar. Nada se perde: quando você religar, a conversa segue de onde parou.</p>
+      <div class="acoes">
+        <button class="btn btn-fantasma" value="nao" autofocus>Deixar conversando</button>
+        <button class="btn btn-escuro" value="sim">Pausar</button>
       </div>
     </form>
-  </section>
+  </dialog>
+
+  <dialog class="confirmar" id="nome-dialogo" aria-labelledby="nome-titulo">
+    <form method="dialog" id="form-nome">
+      <h2 id="nome-titulo">Como você quer aparecer na sala?</h2>
+      <p class="apoio">O outro lado e os dois Claudes vão ver este nome.</p>
+      <input class="campo" id="nome-campo" maxlength="60" required placeholder="Ex.: Léo, ou Padaria Trigo Bom" autocomplete="off">
+      <div class="acoes">
+        <button class="btn btn-acento" value="ok">Entrar na sala</button>
+      </div>
+    </form>
+  </dialog>
 
   <script src="/app.js"></script>
 </body>

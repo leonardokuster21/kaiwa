@@ -1,35 +1,31 @@
 ---
 name: criar
-description: Cria uma sala do Kaiwa para o Claude da pessoa conversar com o Claude de outra pessoa. Combina o objetivo, os participantes, quem abre, o limite de falas e a supervisão, registra a sala no relay e entrega o convite para mandar ao outro lado. Usar quando disserem "/kaiwa:criar", "cria uma sala do Kaiwa", "quero que o meu Claude converse com o Claude de fulano".
-argument-hint: [objetivo]
+description: Cria uma sala do Kaiwa para o Claude da pessoa conversar com o Claude de outra pessoa. Não pergunta nada - cria a sala, abre a sessão da sala numa janela própria e a tela no navegador. Lá a pessoa escolhe o nome, copia o comando de convite, combina o objetivo com o outro humano e os dois liberam a conversa. Usar quando disserem "/kaiwa:criar", "cria uma sala do Kaiwa", "quero que o meu Claude converse com o Claude de fulano".
 ---
 
-# /kaiwa:criar: abrir uma sala
+# /kaiwa:criar: criar a sala
 
-Você está na sessão normal da pessoa. Aqui você cria a sala e o convite; depois, cada lado prepara o seu com `/kaiwa:entrar`.
-
-Objetivo sugerido: $ARGUMENTS
+Você está na sessão normal da pessoa. Aqui você **só cria a sala**: tudo o mais acontece na tela, no navegador (decisão 24). Não pergunte objetivo, nomes nem regras no chat.
 
 ## Passo a passo
-1. **Combinar a sala**, numa rodada de perguntas:
-   - **objetivo:** uma ou duas frases sobre o que a conversa deve produzir (uma decisão, uma proposta, uma lista). É o que os dois Claudes vão perseguir;
-   - **participantes:** dois, cada um com um `id` curto (letras minúsculas, números e `_`) e um nome, no formato `id:Nome,id:Nome`;
-   - **quem abre:** o `id` de quem fala primeiro (padrão: o primeiro);
-   - **limite de falas de cada lado** (padrão 12);
-   - **supervisão:** `livre` (o Claude fala direto) ou `aprovar` (cada fala espera o ok do humano na tela).
-
-   Os nomes vão na configuração da sala, que viaja cifrada: o relay não os lê.
-2. **Preparar o Kaiwa:**
+1. **Preparar o Kaiwa** (na primeira vez, instala as dependências; depois é instantâneo):
    ```
    node "${CLAUDE_PLUGIN_ROOT}/instalar.mjs" "${CLAUDE_PLUGIN_DATA}"
    ```
-   A última linha traz `KAIWA_CLI=<caminho>`. Se falhar, veja o passo 2 da skill `/kaiwa:entrar`.
-3. **Criar a sala:**
+   A última linha traz `KAIWA_CLI=<caminho>`. Se falhar:
+   - Node antigo: peça o Node 24 ou mais novo (https://nodejs.org) e rode de novo.
+   - Erro `SELF_SIGNED_CERT_IN_CHAIN` (rede que inspeciona TLS): rode de novo com a variável `NODE_OPTIONS=--use-system-ca` no ambiente. Nunca desligue a verificação de certificado.
+2. **Criar a sala:**
    ```
-   node "<KAIWA_CLI>" criar --objetivo "<objetivo>" --participantes "<id:Nome,id:Nome>" --abre <id> --rodadas <n> --supervisao <livre|aprovar> --relay https://kaiwa-relay.pages.dev
+   node "<KAIWA_CLI>" nova --relay https://kaiwa-relay.pages.dev
    ```
-   O relay é o carteiro entre os PCs: só guarda e entrega envelopes cifrados. Sem `--relay`, a sala só funciona com os dois lados no mesmo PC.
-4. **Entregar o convite.** O comando imprime o convite (`sala1.…`). Explique:
-   - mande o convite ao outro lado por um canal em que vocês confiam. **Ele é uma senha:** quem tem o texto lê a sala;
-   - o outro lado precisa do Claude Code, do Node 24 ou mais novo e do plugin Kaiwa (`/plugin install kaiwa --marketplace leonardokuster21/kaiwa`; o repositório é privado, então a pessoa precisa de acesso a ele). Lá, ela roda `/kaiwa:entrar <convite>`.
-5. **O lado desta pessoa:** ofereça seguir agora com a skill `/kaiwa:entrar`, com o mesmo convite.
+   O comando cria a sala, abre a sessão do Claude da sala numa janela própria e volta. A tela abre sozinha no navegador quando a sessão subir.
+3. **Dizer à pessoa, em poucas linhas:**
+   - uma janela do terminal abriu com a sessão da sala: se ela perguntar se confia na pasta, aceitar; deixar a janela aberta;
+   - a tela abre no navegador: lá ela escolhe o nome com que aparece e copia, no cartão **Convide o outro lado**, o comando `/kaiwa:entrar …` para mandar à outra pessoa (é uma senha: por um canal de confiança);
+   - a sala começa **em escuta**: os dois humanos combinam o objetivo no campo do humano (o que for só para o Claude dela, "só para o meu Claude"), e quando estiverem de acordo os dois clicam em **Pode começar**;
+   - o outro lado precisa do Claude Code, do Node 24 ou mais novo e do plugin (`/plugin install kaiwa --marketplace leonardokuster21/kaiwa`; o repositório é privado, então a pessoa precisa de acesso).
+
+## O que nunca fazer
+- Não repita o convite no chat sem a pessoa pedir: ele está na tela, e é uma senha.
+- Não abra a sessão da sala de outro jeito (Bash em segundo plano, subagente): o `nova` já abre numa janela própria. Em segundo plano, o Claude Code a corta quando a memória aperta.

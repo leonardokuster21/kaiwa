@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // sala: cria a sala, prepara o lado de cada participante, mede e mostra o estado.
-//   node src/cli.ts criar  --objetivo "..." --participantes "a:Nome A,b:Nome B" [--abre a] [--rodadas 12] [--caracteres 4000] [--supervisao livre|aprovar] [--pasta <base>]
+//   node src/cli.ts criar  --objetivo "..." --participantes "a:Nome A,b:Nome B" [--abre a] [--rodadas N (padrão: sem limite)] [--caracteres 4000] [--pasta <base>]
+//   node src/cli.ts nova   [--relay <url>] [--porta 1337] [--sem-abrir 1] [--pasta <base>]   (1.0: cria a sala em escuta, prepara o seu lado e abre a sessão e a tela)
+//   node src/cli.ts juntar --convite <texto> [--porta 1337] [--sem-abrir 1] [--pasta <base>]  (1.0: entra como convidado e abre a sessão e a tela)
 //   node src/cli.ts ver    --convite <texto> [--pasta <base>]   (objetivo e participantes, para saber o --como antes de entrar)
 //   node src/cli.ts entrar --convite <texto> --como a --dossie <arquivo.md> --politica <arquivo.json> [--porta 1337] [--modo channel|aguardar] [--pasta <base>]
 //   node src/cli.ts abrir  <pasta do lado>     (abre a sessão da sala num terminal próprio: no Maestri, no canvas; fora, numa janela nova)
@@ -28,15 +30,16 @@ export interface OpcoesCriar {
   objetivo: string
   participantes: { id: string; nome: string }[]
   abre?: string
-  rodadas?: number
+  rodadas?: number // falas por lado; 0 ou ausente: sem limite
   caracteres?: number
   supervisao?: Supervisao
   base?: string
   relay?: string // Fase 1: a URL do relay; o convite passa a levar o endereço
+  escuta?: boolean // 1.0: a sala nasce em escuta e o objetivo sai da conversa dos humanos
 }
 
 export function criarSala(o: OpcoesCriar) {
-  if (!o.objetivo?.trim()) throw new Error('falta --objetivo')
+  if (!o.objetivo?.trim() && !o.escuta) throw new Error('falta --objetivo')
   if (o.participantes.length !== 2) throw new Error('a Fase 0 é para dois participantes (o grupo vem depois)')
   for (const p of o.participantes) if (!/^[a-z0-9_]{2,32}$/.test(p.id)) throw new Error(`id inválido: ${p.id} (use letras minúsculas, números e _)`)
   const hoje = new Date().toISOString().slice(0, 10).replaceAll('-', '')
@@ -45,12 +48,13 @@ export function criarSala(o: OpcoesCriar) {
   mkdirSync(join(pasta, 'transporte'), { recursive: true })
   const cfg: ConfigSala = {
     id,
-    objetivo: o.objetivo.trim(),
+    objetivo: (o.objetivo ?? '').trim(),
     criadaEm: new Date().toISOString(),
     abre: o.abre ?? o.participantes[0].id,
     participantes: o.participantes,
-    limites: { rodadas: o.rodadas ?? 12, caracteres: o.caracteres ?? 4000 },
+    limites: { rodadas: o.rodadas ?? 0, caracteres: o.caracteres ?? 4000 },
     supervisao: o.supervisao ?? 'livre',
+    ...(o.escuta ? { escuta: true } : {}),
   }
   writeFileSync(join(pasta, 'sala.json'), JSON.stringify(cfg, null, 2))
   const c: Convite = { ...novoConvite(id), ...(o.relay ? { relay: o.relay.replace(/\/+$/, '') } : {}) }
@@ -94,8 +98,9 @@ export async function buscarConfig(convite: string, base?: string) {
 export interface OpcoesEntrar {
   convite: string
   como: string
-  dossie: string
-  politica: string
+  dossie?: string // 1.0: opcional; o humano conta o que importa pelo campo do humano, só para o Claude dele
+  politica?: string // opcional: sem ela, o porteiro confere os cinco padrões
+  abrirNavegador?: boolean
   porta?: number
   modo?: 'channel' | 'aguardar'
   base?: string
@@ -107,16 +112,16 @@ export function entrarNaSala(o: OpcoesEntrar) {
   const cfg = JSON.parse(readFileSync(join(pastaSala, 'sala.json'), 'utf8')) as ConfigSala
   const eu = cfg.participantes.find(p => p.id === o.como)
   if (!eu) throw new Error(`${o.como} não é participante; os participantes são ${cfg.participantes.map(p => p.id).join(', ')}`)
-  const politica = JSON.parse(readFileSync(resolve(o.politica), 'utf8')) as Politica
+  const politica = (o.politica ? JSON.parse(readFileSync(resolve(o.politica), 'utf8')) : { padroes: [...PADROES_CONHECIDOS] }) as Politica
   for (const p of politica.padroes ?? []) if (!PADROES_CONHECIDOS.includes(p)) throw new Error(`padrão desconhecido na política: ${p}`)
-  const dossie = readFileSync(resolve(o.dossie), 'utf8')
+  const dossie = o.dossie ? readFileSync(resolve(o.dossie), 'utf8') : 'Nenhum dossiê escrito. O que o seu humano quiser que você saiba, ele diz pelo campo do humano, só para você (humano_privado). Fora isso, você só sabe o que for dito na sala.'
   const modo = o.modo ?? 'channel'
   const lado = join(pastaSala, o.como)
   mkdirSync(join(lado, '.sala'), { recursive: true })
   mkdirSync(join(lado, '.claude', 'skills', 'sala'), { recursive: true })
   // A skill da sessão mora fora de plugin/skills/: instalado como plugin, o Kaiwa não a carrega em toda sessão.
 
-  const l: Lado = { eu: o.como, sala: pastaSala, porta: o.porta ?? 1337, modo, ...(conv.relay ? { relay: conv.relay } : {}) }
+  const l: Lado = { eu: o.como, sala: pastaSala, porta: o.porta ?? 1337, modo, ...(conv.relay ? { relay: conv.relay } : {}), ...(o.abrirNavegador ? { abrirNavegador: true } : {}) }
   writeFileSync(join(lado, 'lado.json'), JSON.stringify(l, null, 2))
   writeFileSync(join(lado, '.sala', 'convite'), o.convite.trim() + '\n')
   writeFileSync(join(lado, 'politica.json'), JSON.stringify(politica, null, 2))
@@ -125,7 +130,7 @@ export function entrarNaSala(o: OpcoesEntrar) {
   const servidor = join(PASTA_PLUGIN, 'conector', 'src', 'servidor.ts')
   writeFileSync(join(lado, '.mcp.json'), JSON.stringify({ mcpServers: { sala: { command: 'node', args: [servidor, '--lado', lado] } } }, null, 2))
   // A sessão da sala não age: não roda comando, não escreve, não navega. Só fala pela sala.
-  const ferramentasSala = ['falar', 'pedir_decisao', 'propor_conclusao', 'encerrar', 'estado', 'aguardar'].map(f => `mcp__sala__${f}`)
+  const ferramentasSala = ['falar', 'pedir_decisao', 'propor_conclusao', 'encerrar', 'estado', 'aguardar', 'definir_objetivo', 'historico'].map(f => `mcp__sala__${f}`)
   writeFileSync(
     join(lado, '.claude', 'settings.json'),
     JSON.stringify(
@@ -149,7 +154,7 @@ export function entrarNaSala(o: OpcoesEntrar) {
 Esta sessão existe só para esta sala (${PROJETO.nome}). Você conversa com o Claude de ${outros.map(p => p.nome).join(', ')} pela ferramenta \`falar\`. Conduza pela skill \`/sala\`.
 
 ## Objetivo
-${cfg.objetivo}
+${cfg.objetivo || 'Ainda não escrito: os dois humanos vão combinar o objetivo conversando no campo deles. A sala começa em escuta; o conector avisa quando a conversa começar.'}
 
 ## O seu dossiê: o que você sabe nesta sala
 Só isto. Você não tem outro contexto e não deve inventar.
@@ -295,17 +300,37 @@ export function participantesDeTexto(s: string) {
   })
 }
 
+/** Abre a sessão da sala numa janela própria (a tela abre sozinha no navegador quando o conector sobe). */
+function abrirOuMostrar(lado: string, comando: string, r: Record<string, string>) {
+  if (r['sem-abrir']) {
+    console.log(`Lado pronto em ${lado}. Para abrir a sessão:\n${comando}`)
+    return
+  }
+  const o = abrirSessao(lado)
+  console.log(`A sessão da sala abriu: ${o.onde}. Se ela perguntar se você confia na pasta, aceite.\nA tela abre sozinha no navegador quando a sessão subir (por padrão ${o.tela}; se a porta estiver ocupada, a seguinte).\nA sala começa em escuta: combinem o objetivo no campo do humano e cliquem os dois em "Pode começar".`)
+}
+
 async function principal() {
   const [comando, ...resto] = process.argv.slice(2)
   const { r, soltos } = args(resto)
   const base = r.pasta ? resolve(r.pasta) : undefined
   if (comando === 'criar') {
-    const s = criarSala({ objetivo: r.objetivo, participantes: participantesDeTexto(r.participantes ?? ''), abre: r.abre, rodadas: r.rodadas ? Number(r.rodadas) : undefined, caracteres: r.caracteres ? Number(r.caracteres) : undefined, supervisao: (r.supervisao as Supervisao) || undefined, base, relay: r.relay || undefined })
+    const s = criarSala({ objetivo: r.objetivo, participantes: participantesDeTexto(r.participantes ?? ''), abre: r.abre, rodadas: r.rodadas ? Number(r.rodadas) : undefined, caracteres: r.caracteres ? Number(r.caracteres) : undefined, base, relay: r.relay || undefined })
     if (r.relay) await registrarNoRelay(s.convite, s.config)
     console.log(`Sala criada em ${s.pasta}\n\nConvite (mande por fora, por um canal em que você confia; quem tem o convite lê a sala):\n${s.convite}\n\nCada lado entra com:\nnode "${join(PASTA_PLUGIN, 'conector', 'src', 'cli.ts')}" entrar --convite <convite> --como <id> --dossie <dossie.md> --politica <politica.json> --porta <porta>`)
+  } else if (comando === 'nova') {
+    // 1.0: a sala nasce em escuta, sem objetivo escrito, com quem cria (anfitrião) e quem é convidado (convidado)
+    const c = criarSala({ objetivo: '', escuta: true, participantes: [{ id: 'anfitriao', nome: 'Anfitrião' }, { id: 'convidado', nome: 'Convidado' }], abre: 'anfitriao', base, relay: r.relay || undefined })
+    if (r.relay) await registrarNoRelay(c.convite, c.config)
+    const e = entrarNaSala({ convite: c.convite, como: 'anfitriao', porta: r.porta ? Number(r.porta) : undefined, modo: 'aguardar', base, abrirNavegador: true })
+    console.log(`Sala criada: ${c.config.id}\n\nO outro lado entra com (é uma senha: mande por um canal de confiança):\n/kaiwa:entrar ${c.convite}\n`)
+    abrirOuMostrar(e.lado, e.comando, r)
+  } else if (comando === 'juntar') {
+    const e = await entrarRemoto({ convite: r.convite ?? '', como: 'convidado', porta: r.porta ? Number(r.porta) : undefined, modo: 'aguardar', base, abrirNavegador: true })
+    abrirOuMostrar(e.lado, e.comando, r)
   } else if (comando === 'ver') {
     const { pasta, config: c } = await buscarConfig(r.convite ?? '', base)
-    console.log(JSON.stringify({ sala: c.id, pasta, objetivo: c.objetivo, participantes: c.participantes, abre: c.abre, rodadas: c.limites.rodadas, supervisao: c.supervisao }, null, 2))
+    console.log(JSON.stringify({ sala: c.id, pasta, objetivo: c.objetivo, participantes: c.participantes, abre: c.abre, rodadas: c.limites.rodadas || 'sem limite', supervisao: c.supervisao }, null, 2))
   } else if (comando === 'entrar') {
     const e = await entrarRemoto({ convite: r.convite, como: r.como, dossie: r.dossie, politica: r.politica, porta: r.porta ? Number(r.porta) : undefined, modo: (r.modo as 'channel' | 'aguardar') || undefined, base })
     console.log(`Lado pronto em ${e.lado}\n\nAbra a sessão da sala num terminal:\n${e.comando}\n\nA tela abre em ${e.tela} quando a sessão começar. Na sessão, digite /sala.`)

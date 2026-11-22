@@ -49,6 +49,10 @@ export function abrirTela(sala: Sala, porta: number, pastaTela: string, extra: (
 
   const servidor = createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', origem)
+    if (req.method === 'HEAD' && url.pathname === '/eventos') {
+      res.writeHead(200).end()
+      return
+    }
     if (req.method === 'GET') {
       if (url.pathname === '/eventos') {
         res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' })
@@ -76,11 +80,15 @@ export function abrirTela(sala: Sala, porta: number, pastaTela: string, extra: (
       const b = await corpo(req)
       let r = 'ok'
       if (url.pathname === '/humano') {
-        sala.humano(b.categoria === 'decisao' ? 'decisao' : 'regra', b.destino === 'sala' ? 'sala' : 'meu', String(b.texto ?? ''))
+        sala.humano(b.destino === 'sala' ? 'sala' : 'meu', String(b.texto ?? ''))
       } else if (url.pathname.startsWith('/pendencias/')) {
         r = sala.resolver(url.pathname.split('/')[2], String(b.acao ?? ''), String(b.resposta ?? ''))
-      } else if (url.pathname === '/supervisao' && ['livre', 'aprovar', 'pausado'].includes(b.modo)) {
+      } else if (url.pathname === '/supervisao' && ['livre', 'pausado'].includes(b.modo)) {
         sala.mudarSupervisao(b.modo as Supervisao)
+      } else if (url.pathname === '/nome') {
+        sala.definirNome(String(b.nome ?? ''))
+      } else if (url.pathname === '/pronto') {
+        sala.marcarPronto(String(b.sim) !== 'false') // o JSON traz true ou false
       } else if (url.pathname === '/encerrar') {
         sala.encerrar(String(b.motivo || 'encerrada pelo humano'), 'humano')
       } else {
@@ -93,13 +101,9 @@ export function abrirTela(sala: Sala, porta: number, pastaTela: string, extra: (
     }
   })
 
-  return new Promise((ok, erro) => {
-    servidor.once('error', erro)
-    servidor.listen(porta, '127.0.0.1', () => {
-      const end = servidor.address()
-      const p = typeof end === 'object' && end ? end.port : porta
+  return escutar(servidor, porta).then(p => {
       origem = `http://127.0.0.1:${p}`
-      ok({
+      return {
         url: origem,
         fechar: () =>
           new Promise<void>(fim => {
@@ -108,7 +112,31 @@ export function abrirTela(sala: Sala, porta: number, pastaTela: string, extra: (
             for (const r of ouvintes) r.end()
             servidor.close(() => fim())
           }),
+      }
+  })
+}
+
+/**
+ * Escuta em 127.0.0.1 na porta pedida; se ela estiver ocupada (EADDRINUSE), tenta as próximas, até 20.
+ * Porta 0 deixa o sistema escolher (testes). A tela da sala e a página de preparação usam a mesma regra,
+ * então as duas acabam no mesmo endereço.
+ */
+export function escutar(servidor: import('node:http').Server, porta: number, tentativas = 20): Promise<number> {
+  return new Promise((ok, erro) => {
+    let p = porta
+    const tentar = () => {
+      servidor.once('error', (e: NodeJS.ErrnoException) => {
+        if (e.code === 'EADDRINUSE' && porta !== 0 && p < porta + tentativas) {
+          p++
+          tentar()
+        } else erro(e)
       })
-    })
+      servidor.listen(p, '127.0.0.1', () => {
+        servidor.removeAllListeners('error')
+        const end = servidor.address()
+        ok(typeof end === 'object' && end ? end.port : p)
+      })
+    }
+    tentar()
   })
 }

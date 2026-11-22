@@ -5,7 +5,8 @@ import { createCipheriv, createDecipheriv, createHash, hkdfSync, randomBytes, ra
 
 export const VERSAO = 1
 
-export type TipoConteudo = 'fala' | 'humano' | 'conclusao' | 'aceite' | 'recusa' | 'encerrar'
+// nome, pronto e objetivo (1.0): o nome que cada humano escolhe, o "pode começar" de cada um e o objetivo que o Claude registra
+export type TipoConteudo = 'fala' | 'humano' | 'conclusao' | 'aceite' | 'recusa' | 'encerrar' | 'nome' | 'pronto' | 'objetivo'
 
 export interface Conteudo {
   tipo: TipoConteudo
