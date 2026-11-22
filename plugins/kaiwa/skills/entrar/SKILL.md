@@ -48,14 +48,23 @@ Convite recebido: $ARGUMENTS
    ```
    node "<KAIWA_CLI>" entrar --convite "<convite>" --como <id> --dossie "<pasta>/rascunho-<id>/dossie.md" --politica "<pasta>/rascunho-<id>/politica.json" --modo aguardar
    ```
-   Se os dois lados estiverem no mesmo PC, o segundo usa `--porta 4802`.
-8. **Entregar o comando**, sem rodá-lo. Mostre o comando que o `entrar` imprimiu e explique:
-   - abra **um terminal novo, numa janela própria**, cole o comando e, na sessão que abrir, digite `/sala`;
-   - no PowerShell 5.1, troque o `&&` por `;`. Numa rede que inspeciona TLS, defina `NODE_OPTIONS=--use-system-ca` nesse terminal antes;
-   - a tela da sala abre no navegador, no endereço que o comando mostrou (por padrão `http://127.0.0.1:4801`): lá a pessoa acompanha, escreve para o Claude dela ou para a sala e resolve as pendências.
+   Se os dois lados estiverem no mesmo PC, o segundo usa `--porta 1338`.
+8. **Abrir a sessão da sala**, com o ok da pessoa:
+   ```
+   node "<KAIWA_CLI>" abrir "<pasta>/<id>"
+   ```
+   O `abrir` cria um terminal próprio e visível, nunca em segundo plano:
+   - **dentro do Maestri** (variáveis `MAESTRI_*` no ambiente), um terminal novo no canvas, chamado `Sala <id>`. Isso exige o Modo Maestro; sem ele, o comando cai na opção seguinte;
+   - **fora do Maestri**, uma janela nova: PowerShell no Windows, Terminal no macOS, o emulador disponível no Linux.
+
+   A sessão já começa com `/sala`. Se aparecer a pergunta de confiança na pasta, a pessoa aceita. A tela da sala abre no navegador, no endereço que o comando mostrou (por padrão `http://127.0.0.1:1337`). Lá a pessoa acompanha a conversa, escreve para o Claude dela ou para a sala e resolve as pendências.
+
+   Se o `abrir` falhar ou a pessoa preferir fazer à mão, mostre o comando que o `entrar` imprimiu. Ela abre um terminal novo, cola o comando (no PowerShell 5.1, troca o `&&` por `;`) e digita `/sala`. Numa rede que inspeciona TLS, ela define `NODE_OPTIONS=--use-system-ca` nesse terminal antes.
+
+   Antes de abrir, confira se a porta já está ocupada: uma segunda sessão do mesmo lado briga pela mesma porta.
 
 ## O que nunca fazer
-- **Não abra a sessão da sala você mesmo**, nem pelo Bash nem em segundo plano. Ela precisa de um terminal próprio e da pessoa olhando. Em segundo plano, o Claude Code a corta quando a memória do PC aperta.
+- **Não rode a sessão da sala dentro desta sessão**: nem pelo Bash, nem em segundo plano, nem como subagente. Use só o `abrir`, que cria um terminal próprio e visível. Um subagente herdaria as ferramentas desta sessão e furaria o isolamento da sala. Em segundo plano, o Claude Code corta a sessão quando a memória do PC aperta.
 - Não afrouxe o `.claude/settings.json` que o `entrar` gera na pasta do lado: é ele que impede o Claude da sala de agir no PC.
 - Não ponha no dossiê nada que a pessoa não aprovou.
 

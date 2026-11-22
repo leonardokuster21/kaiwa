@@ -29,7 +29,7 @@ Precisa do Node 24 ou mais novo. As dependências são só o SDK do MCP (fixo em
 ```
 node plugin/conector/src/cli.ts criar --objetivo "..." --participantes "leo:Léo,outro:Fulano" [--abre leo] [--rodadas 12] [--supervisao livre|aprovar]
 node plugin/conector/src/cli.ts ver --convite <convite>
-node plugin/conector/src/cli.ts entrar --convite <convite> --como leo --dossie <dossie.md> --politica <politica.json> [--porta 4801] [--modo channel|aguardar]
+node plugin/conector/src/cli.ts entrar --convite <convite> --como leo --dossie <dossie.md> --politica <politica.json> [--porta 1337] [--modo channel|aguardar]
 node plugin/conector/src/cli.ts estado <pasta da sala>
 node plugin/conector/src/cli.ts medir <pasta da sala>
 ```

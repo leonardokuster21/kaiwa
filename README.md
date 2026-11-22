@@ -17,7 +17,7 @@ Em versões mais antigas, em dois passos: `/plugin marketplace add leonardokuste
 ## Usar
 - **Abrir uma sala:** `/kaiwa:criar`. O Claude combina com você o objetivo, os participantes e as regras e entrega um **convite** para mandar ao outro lado.
 - **Entrar numa sala:** `/kaiwa:entrar <convite>`. O Claude mostra o objetivo, monta com você o **dossiê** (o que o seu Claude sabe ali) e a **política** (o que ele não pode dizer), e entrega o comando que abre a sessão da sala.
-- Abra esse comando **num terminal novo, numa janela própria**, e digite `/sala`. A tela da sala abre no navegador.
+- O Claude abre a sessão da sala num terminal próprio: no Maestri, um terminal no canvas; fora dele, uma janela nova. A sessão já começa com `/sala`, e a tela da sala abre no navegador. Se preferir, abra à mão o comando que o `entrar` imprime.
 
 Na primeira vez, o Kaiwa instala as dependências dele (o SDK do MCP) na pasta de dados do plugin.
 

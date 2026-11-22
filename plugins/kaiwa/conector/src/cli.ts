@@ -2,11 +2,13 @@
 // sala: cria a sala, prepara o lado de cada participante, mede e mostra o estado.
 //   node src/cli.ts criar  --objetivo "..." --participantes "a:Nome A,b:Nome B" [--abre a] [--rodadas 12] [--caracteres 4000] [--supervisao livre|aprovar] [--pasta <base>]
 //   node src/cli.ts ver    --convite <texto> [--pasta <base>]   (objetivo e participantes, para saber o --como antes de entrar)
-//   node src/cli.ts entrar --convite <texto> --como a --dossie <arquivo.md> --politica <arquivo.json> [--porta 4801] [--modo channel|aguardar] [--pasta <base>]
+//   node src/cli.ts entrar --convite <texto> --como a --dossie <arquivo.md> --politica <arquivo.json> [--porta 1337] [--modo channel|aguardar] [--pasta <base>]
+//   node src/cli.ts abrir  <pasta do lado>     (abre a sessão da sala num terminal próprio: no Maestri, no canvas; fora, numa janela nova)
 //   node src/cli.ts estado <pasta da sala>     (só contagens, nunca o texto)
 //   node src/cli.ts medir  <pasta da sala>     (canários que atravessaram, o que o porteiro segurou)
 // A base padrão é ~/.salas: fora de qualquer repositório, para a sessão da sala não herdar CLAUDE.md de projeto.
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { spawn, spawnSync } from 'node:child_process'
 import { homedir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { randomBytes } from 'node:crypto'
@@ -114,7 +116,7 @@ export function entrarNaSala(o: OpcoesEntrar) {
   mkdirSync(join(lado, '.claude', 'skills', 'sala'), { recursive: true })
   // A skill da sessão mora fora de plugin/skills/: instalado como plugin, o Kaiwa não a carrega em toda sessão.
 
-  const l: Lado = { eu: o.como, sala: pastaSala, porta: o.porta ?? 4801, modo, ...(conv.relay ? { relay: conv.relay } : {}) }
+  const l: Lado = { eu: o.como, sala: pastaSala, porta: o.porta ?? 1337, modo, ...(conv.relay ? { relay: conv.relay } : {}) }
   writeFileSync(join(lado, 'lado.json'), JSON.stringify(l, null, 2))
   writeFileSync(join(lado, '.sala', 'convite'), o.convite.trim() + '\n')
   writeFileSync(join(lado, 'politica.json'), JSON.stringify(politica, null, 2))
@@ -169,6 +171,58 @@ ${lista('Pergunte antes ao seu humano, com pedir_decisao:', politica.perguntar_a
   const base = `claude --strict-mcp-config --mcp-config .mcp.json --allowedTools mcp__sala`
   const cmd = modo === 'channel' ? `${base} --dangerously-load-development-channels server:sala` : base
   return { lado, comando: `cd "${lado}" && ${cmd}`, tela: `http://127.0.0.1:${l.porta}` }
+}
+
+/** Os argumentos do claude da sessão da sala. O prompt inicial "/sala" vai antes das flags (--allowedTools é variádico). */
+function argsSessao(pastaLado: string) {
+  const l = JSON.parse(readFileSync(join(pastaLado, 'lado.json'), 'utf8')) as Lado
+  const a = ['/sala', '--strict-mcp-config', '--mcp-config', '.mcp.json', '--allowedTools', 'mcp__sala']
+  if (l.modo === 'channel') a.push('--dangerously-load-development-channels', 'server:sala')
+  return { a, tela: `http://127.0.0.1:${l.porta}`, eu: l.eu }
+}
+
+export function dentroDoMaestri() {
+  return Boolean(process.env.MAESTRI_TERMINAL_ID && (process.env.MAESTRI_CLI || process.env.MAESTRI_PIPE))
+}
+
+/**
+ * Abre a sessão da sala num terminal próprio e visível, nunca em segundo plano:
+ * no Maestri, um terminal novo no canvas; fora dele, uma janela nova do sistema.
+ * A sessão continua fechada (.mcp.json estrito, settings.json com deny): é um processo claude à parte, não um subagente.
+ */
+export function abrirSessao(pastaLado: string): { onde: string; tela: string } {
+  const lado = resolve(pastaLado)
+  if (!existsSync(join(lado, 'lado.json'))) throw new Error(`${lado} não é a pasta de um lado (falta lado.json); rode o entrar antes`)
+  const { a, tela, eu } = argsSessao(lado)
+  const linha = (xs: string[]) => xs.map(x => (/^[\w./:-]+$/.test(x) ? x : `"${x}"`)).join(' ')
+
+  if (dentroDoMaestri()) {
+    const maestri = process.env.MAESTRI_CLI || 'maestri'
+    const nome = `Sala ${eu}`
+    const r = spawnSync(maestri, ['recruit', nome, '--command', `claude ${linha(a)}`, '--dir', lado], { encoding: 'utf8' })
+    if (r.status === 0) return { onde: `terminal "${nome}" no canvas do Maestri`, tela }
+    // recruit só funciona em Modo Maestro; sem ele, cai na janela do sistema.
+    console.error(`aviso: o Maestri não criou o terminal (${(r.stderr || r.stdout || '').trim().split('\n')[0]}); abrindo uma janela do sistema`)
+  }
+
+  if (process.platform === 'win32') {
+    const ps = `Set-Location -LiteralPath '${lado.replace(/'/g, "''")}'; claude ${a.map(x => `'${x}'`).join(' ')}`
+    // detached no Windows dá ao processo um console (uma janela) próprio.
+    spawn('powershell.exe', ['-NoExit', '-Command', ps], { detached: true, stdio: 'ignore' }).unref()
+    return { onde: 'janela nova do PowerShell', tela }
+  }
+  if (process.platform === 'darwin') {
+    const sh = `cd '${lado.replace(/'/g, `'\\''`)}' && claude ${linha(a)}`
+    const r = spawnSync('osascript', ['-e', `tell application "Terminal" to do script ${JSON.stringify(sh)}`, '-e', 'tell application "Terminal" to activate'])
+    if (r.status !== 0) throw new Error('não consegui abrir o Terminal')
+    return { onde: 'janela nova do Terminal', tela }
+  }
+  const sh = `cd '${lado.replace(/'/g, `'\\''`)}' && claude ${linha(a)}; exec bash`
+  for (const [t, ...pre] of [['x-terminal-emulator', '-e'], ['gnome-terminal', '--'], ['konsole', '-e'], ['xterm', '-e']]) {
+    const r = spawnSync(t, [...pre, 'bash', '-c', sh], { stdio: 'ignore', timeout: 3000 })
+    if (!r.error) return { onde: `janela nova (${t})`, tela }
+  }
+  throw new Error('não achei um emulador de terminal; abra a sessão à mão com o comando do entrar')
 }
 
 function lerEventos(pastaLado: string): Evento[] {
@@ -255,12 +309,15 @@ async function principal() {
   } else if (comando === 'entrar') {
     const e = await entrarRemoto({ convite: r.convite, como: r.como, dossie: r.dossie, politica: r.politica, porta: r.porta ? Number(r.porta) : undefined, modo: (r.modo as 'channel' | 'aguardar') || undefined, base })
     console.log(`Lado pronto em ${e.lado}\n\nAbra a sessão da sala num terminal:\n${e.comando}\n\nA tela abre em ${e.tela} quando a sessão começar. Na sessão, digite /sala.`)
+  } else if (comando === 'abrir') {
+    const o = abrirSessao(soltos[0] ?? '.')
+    console.log(`Sessão da sala aberta: ${o.onde}.\nSe aparecer a pergunta de confiança na pasta, aceite. A sessão já começa com /sala.\nA tela fica em ${o.tela}.`)
   } else if (comando === 'estado') {
     console.log(JSON.stringify(estado(resolve(soltos[0] ?? '.')), null, 2))
   } else if (comando === 'medir') {
     console.log(JSON.stringify(medir(resolve(soltos[0] ?? '.')), null, 2))
   } else {
-    console.log('uso: node src/cli.ts criar|entrar|estado|medir (veja o topo deste arquivo)')
+    console.log('uso: node src/cli.ts criar|ver|entrar|abrir|estado|medir (veja o topo deste arquivo)')
     process.exitCode = comando ? 1 : 0
   }
 }

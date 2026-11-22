@@ -114,7 +114,7 @@ export async function iniciarConector(pastaLado: string) {
   console.error(`[sala] ${lado.eu}: tela em ${tela.url} (modo ${lado.modo}, transporte ${lado.relay ? `relay ${lado.relay}` : 'local'})`)
 
   mcp = new Server(
-    { name: 'sala', version: '0.1.0' },
+    { name: 'sala', version: '0.1.1' },
     {
       capabilities: {
         tools: {},
