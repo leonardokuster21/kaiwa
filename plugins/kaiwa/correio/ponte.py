@@ -1,12 +1,14 @@
-"""ponte.py do Kaiwa: a mesma interface do correio por git (comandos, saídas e a classe Ponte), sobre o modo correio.
+"""ponte.py do Kaiwa: a mesma interface do correio por git (comandos, saídas e a classe Ponte), sobre uma conversa do
+Kaiwa 2.0 (o agente continua trabalhando; lê e responde por comando).
 
-Quem já usa o ponte.py troca só a pasta: este arquivo fica na pasta do correio (~/.kaiwa/correio/<nome>/), ao lado de
-kaiwa.json, que diz onde estão o Node e a CLI do Kaiwa. Só biblioteca padrão. Sem IA e sem navegador.
+Quem já usa o ponte.py troca só a pasta: este arquivo fica em ~/.kaiwa/conversas/<apelido>/, ao lado de kaiwa.json,
+que diz onde estão o Node e a CLI do Kaiwa e qual é a conversa. Só biblioteca padrão. Sem IA e sem navegador.
+O --lado (pessoal ou trabalho) continua aceito, para a linha de comando não mudar; quem diz o lado é a conversa.
 
   python ponte.py --lado pessoal|trabalho <comando>
 
 Comandos (como no correio por git):
-  enviar --tipo T --arquivo msg.txt   cifra e manda pelo relay (sem rede, fica na fila e sai no próximo comando)
+  enviar --tipo T --arquivo msg.txt   cifra e manda pela conversa (sem rede, fica na fila e sai no próximo comando)
   ler                                 imprime o que chegou do outro lado e ainda não foi confirmado
   confirmar                           marca como lido o que o último `ler` mostrou e manda o recibo de lido
   vivo                                consulta o relay (o outro lado vê há quantos minutos este lado deu sinal)
@@ -43,15 +45,12 @@ class Ponte:
         try:
             k = json.loads((self.pasta / "kaiwa.json").read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
-            raise Erro(f"falta {self.pasta / 'kaiwa.json'}: rode `correio ponte --nome <n>` na CLI do Kaiwa")
-        self.node, self.cli, self.nome = k["node"], k["cli"], k["correio"]
-        cfg = json.loads((self.pasta / "correio.json").read_text(encoding="utf-8"))
-        if lado and lado != cfg["eu"]:
-            raise Erro(f"este correio é do lado {cfg['eu']}, não {lado}")
+            raise Erro(f"falta {self.pasta / 'kaiwa.json'}: rode `conversa ponte --nome <apelido>` na CLI do Kaiwa")
+        self.node, self.cli, self.nome = k["node"], k["cli"], k["conversa"]
         self._estado = None
 
     def _rodar(self, *args: str) -> subprocess.CompletedProcess:
-        r = subprocess.run([self.node, self.cli, "correio", *args, "--nome", self.nome], capture_output=True, text=True, encoding="utf-8", errors="replace")
+        r = subprocess.run([self.node, self.cli, "conversa", *args, "--nome", self.nome], capture_output=True, text=True, encoding="utf-8", errors="replace")
         if r.returncode == 2:
             raise Erro((r.stderr or r.stdout).strip().removeprefix("erro: "))
         return r
@@ -71,7 +70,7 @@ class Ponte:
         return int(self._estado["naFila"])
 
     def sincronizar(self) -> bool:
-        return self._rodar("vivo").returncode == 0
+        return bool(self._json("estado", "--limite", str(self.limite))["rede"])
 
     def vivo(self) -> bool:
         return self.sincronizar()
@@ -81,15 +80,17 @@ class Ponte:
             f.write(texto)
             caminho = f.name
         try:
-            r = self._rodar("enviar", "--tipo", tipo, "--arquivo", caminho)
+            r = self._rodar("falar", "--tipo", tipo, "--arquivo", caminho)
         finally:
             os.unlink(caminho)
         linha = (r.stdout or "").strip()
+        if r.returncode in (4, 5):  # o porteiro segurou, ou a conversa recusou (escuta, pausa, fora da vez)
+            raise Erro(linha)
         ident = linha.split()[0].removeprefix("enviado=") if linha else ""
         return ident, r.returncode == 0
 
     def ler(self) -> list[tuple[str, str]]:
-        return [(f"{m['id']} ({m['tipo']}, de {m['de']}, {m['quando']})", m["texto"]) for m in self._json("ler")]
+        return [(f"{m['id']} ({m['tipo']}, de {m['de']})", m["texto"]) for m in self._json("ler")]
 
     def confirmar(self) -> int:
         r = self._rodar("confirmar")

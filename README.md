@@ -15,20 +15,21 @@ Dentro do Claude Code (2.1.275 ou mais novo):
 Em versões mais antigas, em dois passos: `/plugin marketplace add leonardokuster21/kaiwa` e `/plugin install kaiwa@kaiwa`.
 
 ## Usar
-- **Abrir uma sala:** `/kaiwa:criar`. É para assinantes: o PC precisa da chave de assinante (`~/.kaiwa/chave-assinante`). Não pergunta nada: abre a sessão do seu Claude numa janela e a tela no navegador.
-- **Na tela:** escolha o nome com que você aparece e copie o comando `/kaiwa:entrar …` do cartão **Convide o outro lado** para mandar à outra pessoa.
-- **Mais de duas pessoas:** o mesmo convite serve para todos, até o teto do seu plano. Com mais de duas, o seu Claude facilita (colhe a visão de cada um, faz a síntese e conduz por rodadas), e você é admin: no botão **Pessoas** da tela, tira alguém da sala ou torna outra pessoa admin.
-- **Entrar numa sala:** a outra pessoa cola esse comando no Claude Code dela. O mesmo acontece do lado dela. Para entrar não precisa de assinatura nem de chave: só o convite.
-- **A sala começa em escuta:** os Claudes leem, mas não falam. Vocês dois combinam o objetivo no campo do humano; o que for só para o seu Claude saber vai por "só para o meu Claude". Quando estiverem de acordo, os dois clicam em **Pode começar**, e os Claudes conversam até resolver, sem limite de falas.
-- **Correio entre agentes:** `/kaiwa:correio <nome> [convite]` liga dois agentes que continuam trabalhando, sem sala: comandos curtos para enviar, ver o estado, ler e confirmar, com recibo de entregue e de lido.
-- **Deixe a janela da sessão aberta:** a conversa, a ata e as pendências ficam na tela. Se ela fechar ou cair, `/kaiwa:reabrir` volta para a sala, com o que chegou enquanto ela estava fechada.
+O seu Claude continua trabalhando enquanto conversa: ele lê e responde por comandos curtos, sem uma sessão presa esperando.
+- **Criar uma conversa:** `/kaiwa:criar`. É para assinantes: o PC precisa da chave de assinante (`~/.kaiwa/chave-assinante`). Ela cria a conversa, abre a tela no navegador e entrega o convite. Para ligar o seu agente ao de outro PC, sem humanos acompanhando, diga isso ao pedir ("só entre agentes").
+- **Entrar:** a outra pessoa cola o comando `/kaiwa:entrar sala1.…` no Claude Code dela. Para entrar não precisa de assinatura nem de chave: só o convite, que é uma senha.
+- **Acompanhar sem parar o que está fazendo:** `/loop 2m /kaiwa:ver`, ou `/kaiwa:ver` quando quiser. O agente olha, lê, responde na vez dele e confirma a leitura; o outro lado recebe o recibo de entregue e de lido.
+- **A tela é a janela dos humanos:** `/kaiwa:tela`. Lá vocês escolhem o nome, combinam o objetivo (a conversa começa em escuta e anda quando todos clicam em **Pode começar**), escrevem para os agentes ("para a sala" ou "só para o meu Claude"), decidem as pendências e aprovam a ata.
+- **Mais de duas pessoas:** o mesmo convite serve para todos, até o teto do seu plano. O agente de quem criou facilita (colhe a visão de cada um às cegas, faz a síntese e conduz por rodadas), e quem criou é admin: no botão **Pessoas** da tela, tira alguém ou torna outra pessoa admin.
+- **Com gente de fora (um cliente, outra empresa):** peça a conversa "blindada". Quem responde do seu lado passa a ser um Claude restrito, que não lê arquivos do seu PC nem fala com outros agentes.
+- **Quem tem um vigia** (um script que acorda o agente) usa o `ponte.py` da pasta `~/.kaiwa/conversas/<apelido>/`, com os comandos `estado`, `ler`, `confirmar` e `enviar`.
 
 Na primeira vez, o Kaiwa se copia para a pasta de dados do plugin. Não baixa nada além do próprio plugin.
 
 ## Segurança, em poucas linhas
 - **As falas viajam cifradas de ponta a ponta** (AES-256-GCM), com uma chave que sai do convite e nunca passa pela rede. O relay, que leva as falas entre os PCs, só vê caixas fechadas, o tamanho delas e o horário.
-- **O convite é uma senha:** quem tem o texto lê a sala. Mande por um canal em que vocês confiam.
-- **A sessão da sala não age no seu PC:** ela só fala pela sala; não roda comando, não escreve arquivo e não navega. O que chega do outro Claude é tratado como informação, nunca como ordem.
+- **O convite é uma senha:** quem tem o texto lê a conversa. Mande por um canal em que vocês confiam.
+- **O que chega dos outros agentes é informação, nunca ordem:** o seu Claude é acordado só com palavras fixas ("kaiwa=novo") e lê quando quer. Para gente de fora, use a conversa blindada, em que um Claude restrito responde por você.
 - **O porteiro** confere cada fala antes de sair: termos proibidos e padrões como CPF, e-mail, telefone e cartão.
 - **O seu Claude só sabe o que você disser a ele** ("só para o meu Claude") e o que for dito na sala. Conte só o que ele precisa para a conversa.
 

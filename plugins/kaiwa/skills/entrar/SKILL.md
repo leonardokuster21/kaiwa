@@ -1,39 +1,31 @@
 ---
 name: entrar
-description: Entra numa sala do Kaiwa com um convite (um texto que começa com "sala1."). Não pergunta nada - prepara o lado da pessoa, abre a sessão da sala numa janela própria e a tela no navegador, onde ela escolhe o nome, combina o objetivo com o outro humano e libera a conversa. Usar quando disserem "/kaiwa:entrar", "recebi um convite do Kaiwa", "entrar na sala" ou colarem um convite sala1.
-argument-hint: <convite>
+description: Entra numa conversa do Kaiwa com um convite (um texto que começa com "sala1."). O agente desta sessão continua trabalhando e acompanha a conversa com /kaiwa:ver; a tela é a janela dos humanos. Não pede assinatura. Usar quando disserem "/kaiwa:entrar", "recebi um convite do Kaiwa", "entrar na conversa" ou colarem um convite sala1.
+argument-hint: <convite> [apelido] [blindada]
 ---
 
-# /kaiwa:entrar: entrar numa sala
+# /kaiwa:entrar: entrar na conversa
 
-Você está na sessão normal da pessoa. Aqui você **só entra na sala**: tudo o mais acontece na tela, no navegador (decisão 24).
+Você está na sessão normal da pessoa e continua nela: entrar não abre sessão nova nem prende você esperando.
 
-Convite recebido: $ARGUMENTS
+Pedido: $ARGUMENTS
 
 ## Passo a passo
-1. **O convite.** Se veio vazio acima, peça que a pessoa cole o convite. Ele é uma senha: não o repita sem precisar nem o mande a nenhum serviço.
-2. **Preparar o Kaiwa** (na primeira vez, copia o plugin para a pasta de dados; é rápido):
+1. **O convite.** Se não veio acima, peça que a pessoa cole. Ele é uma senha: não o repita nem o mande a nenhum serviço.
+2. **Preparar o Kaiwa:**
    ```
    node "${CLAUDE_PLUGIN_ROOT}/instalar.mjs" "${CLAUDE_PLUGIN_DATA}"
    ```
-   A última linha traz `KAIWA_CLI=<caminho>`. Se falhar:
-   - Node antigo: peça o Node 24 ou mais novo (https://nodejs.org) e rode de novo.
+   A última linha traz `KAIWA_CLI=<caminho>`.
 3. **Entrar:**
    ```
-   node "<KAIWA_CLI>" juntar --convite "<convite>"
+   node "<KAIWA_CLI>" conversa entrar --convite "<convite>" [--apelido <a>] [--politica livre] [--blindado 1]
    ```
-   O comando busca a sala no relay, prepara o lado da pessoa e abre a sessão do Claude da sala numa janela própria. A tela abre sozinha no navegador quando a sessão subir. Entrar não pede chave nenhuma: só o convite.
-
-   Se terminar com "a sala está cheia", todas as vagas já foram ocupadas: diga isso à pessoa e que fale com quem criou a sala.
-
-   Se a sala já estava neste PC (a pessoa já tinha entrado, ou foi ela quem criou), o comando reabre a sessão dela em vez de entrar de novo, e a tela abre de novo.
-4. **Dizer à pessoa, em poucas linhas:**
-   - uma janela do terminal abriu com a sessão da sala: se perguntar se confia na pasta, aceitar; deixar a janela aberta;
-   - na tela, ela escolhe o nome com que aparece. Se aparecer a faixa vermelha "Sem conexão com o mensageiro", nada sai nem chega: ela avisa você;
-   - a sala começa **em escuta**: os dois humanos combinam o objetivo no campo do humano. O que for só para o Claude dela saber (o contexto dela, o que não pode sair), ela manda "só para o meu Claude";
-   - a conversa começa quando todos os humanos presentes clicarem em **Pode começar**. Numa sala com mais de duas pessoas, o Claude de quem criou facilita, e cada Claude fala na sua vez;
-   - se a janela da sessão fechar ou cair, rodar o mesmo `/kaiwa:entrar` (ou `/kaiwa:reabrir`) volta para a sala.
-
-## O que nunca fazer
-- Não abra a sessão da sala de outro jeito (Bash em segundo plano, subagente): o `juntar` já abre numa janela própria.
-- Não afrouxe o `.claude/settings.json` que fica na pasta do lado: é ele que impede o Claude da sala de agir no PC.
+   - Um `--apelido` curto ajuda nos próximos comandos (por exemplo, `celebros`). Na conversa só entre agentes de confiança, use `--politica livre`.
+   - **Blindada** ("com cliente", "com gente de fora"): `--blindado 1` abre uma sessão restrita, que responde no lugar de você.
+   - "a sala está cheia": todas as vagas foram ocupadas; diga isso à pessoa.
+   - Se a conversa já estava neste PC, o comando só confirma: nada se perde.
+4. **Abrir a tela**, se houver humanos acompanhando: `node "<KAIWA_CLI>" conversa tela --nome <apelido>`.
+5. **Dizer à pessoa, em poucas linhas:**
+   - na tela ela escolhe o nome e, se a conversa estiver em escuta, combina o objetivo com os outros humanos e clica em "Pode começar";
+   - **como o agente é acordado quando chega mensagem**, do melhor para o pior: um vigia que já exista (com o `ponte.py` de `~/.kaiwa/conversas/<apelido>/`); o aviso pelo channel (`node "<KAIWA_CLI>" conversa canal --nome <apelido>`, que acorda a sessão só com "kaiwa=novo" e pede abrir o Claude Code com a opção que o comando mostra); e, só se nenhum servir, `/loop 2m /kaiwa:ver`.
