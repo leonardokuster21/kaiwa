@@ -13,7 +13,11 @@ Comandos (como no correio por git):
   confirmar                           marca como lido o que o último `ler` mostrou e manda o recibo de lido
   vivo                                consulta o relay (o outro lado vê há quantos minutos este lado deu sinal)
   estado                              há novidade? quando o outro lado deu sinal? (só palavras fixas)
-  recibos                             das mensagens deste lado: entregue e lida, por identificador (novo)
+  recibos                             das mensagens deste lado: entregue, lida (há quanto tempo) e respondida (novo)
+  historico [--desde <id>]            uma linha por mensagem, desde uma mensagem, para as notas (novo)
+
+Em enviar, opcionais (novos): --fio <assunto>, --responde <começo do id>, --prazo "AAAA-MM-DD HH:MM",
+--palavra "<a frase exata do humano>" --palavra-quando "<data e hora>" --palavra-onde "<canal>".
 
 `estado` nunca imprime o texto de uma mensagem: o que um vigia imprime entra no terminal como se fosse digitado.
 Saídas de `estado`: novidade=sim|nao, quantas=N, rede=ok|falhou, outro-lado=vivo|sem-sinal|nunca|desconhecido,
@@ -75,12 +79,14 @@ class Ponte:
     def vivo(self) -> bool:
         return self.sincronizar()
 
-    def enviar(self, tipo: str, texto: str) -> tuple[str, bool]:
+    def enviar(self, tipo: str, texto: str, **extras: str) -> tuple[str, bool]:
+        """extras: fio, responde, prazo, palavra, palavra_quando, palavra_onde (todos opcionais)."""
         with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False, encoding="utf-8") as f:
             f.write(texto)
             caminho = f.name
         try:
-            r = self._rodar("falar", "--tipo", tipo, "--arquivo", caminho)
+            mais = [a for k, v in extras.items() if v for a in (f"--{k.replace('_', '-')}", str(v))]
+            r = self._rodar("falar", "--tipo", tipo, "--arquivo", caminho, *mais)
         finally:
             os.unlink(caminho)
         linha = (r.stdout or "").strip()
@@ -99,6 +105,9 @@ class Ponte:
     def recibos(self) -> list[dict]:
         return self._json("recibos")
 
+    def historico(self, desde: str = "") -> str:
+        return (self._rodar("historico", "--resumo", "1", *(["--desde", desde] if desde else [])).stdout or "").strip()
+
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -109,13 +118,18 @@ def main(argv: list[str]) -> int:
     e = sub.add_parser("enviar")
     e.add_argument("--tipo", required=True)
     e.add_argument("--arquivo", required=True)
+    for opc in ("fio", "responde", "prazo", "palavra", "palavra-quando", "palavra-onde"):
+        e.add_argument(f"--{opc}", default="")
+    h = sub.add_parser("historico")
+    h.add_argument("--desde", default="")
     for c in ("ler", "confirmar", "vivo", "estado", "recibos"):
         sub.add_parser(c)
     a = ap.parse_args(argv)
     try:
         p = Ponte(Path(a.repo), a.lado, a.limite)
         if a.cmd == "enviar":
-            nome, ok = p.enviar(a.tipo, Path(a.arquivo).read_text(encoding="utf-8-sig"))
+            extras = {k: getattr(a, k) for k in ("fio", "responde", "prazo", "palavra", "palavra_quando", "palavra_onde")}
+            nome, ok = p.enviar(a.tipo, Path(a.arquivo).read_text(encoding="utf-8-sig"), **extras)
             print(f"enviado={nome} rede={'ok' if ok else 'falhou-na-fila'}")
             return 0 if ok else 3
         if a.cmd == "ler":
@@ -134,7 +148,10 @@ def main(argv: list[str]) -> int:
             return 0 if ok else 3
         if a.cmd == "recibos":
             for m in p.recibos():
-                print(f"{m['id']} {m['tipo']} entregue={(m['entregue'] or 'nao')[:16]} lida={(m['lida'] or 'nao')[:16]}")
+                print(f"{m['id'][:8]} {m.get('etiqueta') or m['tipo']} entregue={(m['entregue'] or 'nao')[:16]} lida={(m['lida'] or 'nao')[:16]} respondida={'sim' if m.get('respondida') else 'nao'}")
+            return 0
+        if a.cmd == "historico":
+            print(p.historico(a.desde) or "nada desde então")
             return 0
         novas, rede, min_ = p.estado()
         print(f"novidade={'sim' if novas else 'nao'} quantas={len(novas)} rede={'ok' if rede else 'falhou'}")

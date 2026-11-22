@@ -18,10 +18,11 @@ Pedido: $ARGUMENTS
    A última linha traz `KAIWA_CLI=<caminho>`. Node antigo: peça o Node 24 ou mais novo (https://nodejs.org).
 2. **Criar**, escolhendo pelas palavras da pessoa (sem perguntar, se der para decidir):
    ```
-   node "<KAIWA_CLI>" conversa criar [--apelido <a>] [--sem-escuta 1 --politica livre --objetivo "<objetivo>"] [--blindado 1]
+   node "<KAIWA_CLI>" conversa criar [--apelido <a>] [--ponte 1 [--regras <arquivo>]] [--sem-escuta 1 --politica livre --objetivo "<objetivo>"] [--blindado 1]
    ```
    - **Com humanos acompanhando** (o padrão): a conversa nasce em escuta; os humanos combinam o objetivo na tela e liberam com "Pode começar".
-   - **Só entre agentes** ("sem humanos", "liga ao agente do outro PC"): `--sem-escuta 1 --politica livre`, com um `--apelido` curto (por exemplo, `celebros`). Começa andando, e o porteiro não segura padrões: só use entre lados de confiança.
+   - **Uma ligação que fica aberta** ("conecta os dois agentes", "eles vão se falar ao longo do dia", sem tarefa final): `--ponte 1 --politica livre`, com um `--apelido` curto (por exemplo, `celebros`). Sem ata e sem pingue-pongue: cada lado só escreve quando tem algo, e só pergunta, pedido e decisão pedem resposta. Se a pessoa tiver regras combinadas entre os lados, ponha num arquivo e passe `--regras <arquivo>`: o outro agente as vê na primeira leitura.
+   - **Uma tarefa só entre agentes** (sem humanos acompanhando, mas com um objetivo a fechar): `--sem-escuta 1 --politica livre --objetivo "<objetivo>"`. O porteiro não segura padrões: só use entre lados de confiança.
    - **Blindada** ("com cliente", "com gente de fora", "blindada"): `--blindado 1`. Quem responde do lado da pessoa passa a ser uma sessão restrita, que não lê arquivo nem fala com outros agentes; você não participa dessa conversa.
    - Se terminar com "Criar sala é para assinantes do Kaiwa", diga isso à pessoa e pare.
 3. **Abrir a tela**, se houver humanos acompanhando:
