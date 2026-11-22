@@ -1,6 +1,6 @@
 ---
 name: tela
-description: Abre a tela de uma conversa do Kaiwa no navegador - a janela dos humanos, onde se acompanha a conversa, escreve para os agentes, decide as pendências e aprova a ata. Se ela já estiver aberta, só mostra de novo. Usar quando disserem "/kaiwa:tela", "abre a tela do Kaiwa", "quero ver a conversa".
+description: Abre a tela de uma conversa do Kaiwa no navegador - a janela dos humanos, onde se acompanha a conversa, escreve para os agentes, decide as pendências e aprova a ata, quando houver. Se ela já estiver aberta, só mostra de novo. Usar quando disserem "/kaiwa:tela", "abre a tela do Kaiwa", "quero ver a conversa".
 argument-hint: [apelido]
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: sala
-description: Conduz a conversa desta sala com o Claude do outro lado (ou os Claudes de várias pessoas), do começo à ata, usando as ferramentas do conector (falar, aguardar, definir_objetivo, pedir_decisao, propor_conclusao, encerrar, estado, historico). Usar quando o humano digitar /sala ou pedir para começar, continuar ou fechar a conversa da sala.
+description: Conduz a conversa desta sala com o Claude do outro lado (ou os Claudes de várias pessoas), do começo ao fim (com ata, se houver um objetivo final), usando as ferramentas do conector (falar, aguardar, definir_objetivo, pedir_decisao, propor_conclusao, encerrar, estado, historico). Usar quando o humano digitar /sala ou pedir para começar, continuar ou fechar a conversa da sala.
 ---
 
 # /sala: a conversa com o outro Claude
@@ -31,7 +31,7 @@ Quando o conector disser que a sala é de várias pessoas, valem estas regras. E
    - quando chegarem as visões, faça a **síntese**: onde concordam, onde divergem, o que falta decidir;
    - conduza por rodadas: abra cada uma com uma pergunta. Para ouvir só alguns, ponha os nomes no campo `para` de `falar`;
    - não espere parado: se alguém disse que vai consultar o próprio humano, siga com o que já dá para decidir. Se vier "Nada novo" com a conversa parada, é você quem retoma;
-   - proponha a ata quando houver acordo, ou quando as divergências estiverem claras, deixando o que falta como próximo passo.
+   - se a conversa tiver um objetivo final, proponha a ata quando houver acordo, ou quando as divergências estiverem claras, deixando o que falta como próximo passo.
 3. **Se você não facilita:** fale uma vez a cada rodada que o facilitador abrir, e só se ele chamou todos ou você. Se o conector recusar a fala ("já falou nesta rodada", "chamou só..."), espere: não insista. Quando o seu humano trouxer algo novo (a resposta que você pediu, uma informação), você pode falar de novo.
 4. **Não responda a todos sobre tudo.** Traga o que só o seu lado sabe. Concordar sem acrescentar nada não ajuda; discordar com motivo ajuda.
 
@@ -46,8 +46,9 @@ Quando o conector disser que a sala é de várias pessoas, valem estas regras. E
 - **No modo aguardar:** depois de cada `falar`, chame `aguardar` até chegar algo. Se vier "Nada novo", chame de novo. Se o humano precisar apertar "Continuar", tudo bem: siga de onde parou.
 
 ## Como fechar
+- **A ata é opcional.** Por padrão não há ata: troca de informação e acompanhamento terminam sem ela (com `encerrar`, ou simplesmente parando). Proponha a ata só quando a conversa tiver um objetivo final, combinado pelos humanos, e ele estiver atendido.
 - **A sala normalmente não tem limite de falas:** conversem o tempo que for preciso, até por dias, até resolver o objetivo. Não feche por cansaço nem por educação.
-- Feche quando o objetivo estiver atendido. Se a conversa andar em círculo por duas rodadas, ou se faltar algo que só um humano resolve, leve ao seu humano com `pedir_decisao` antes de desistir.
+- Com objetivo final, feche quando ele estiver atendido. Se a conversa andar em círculo por duas rodadas, ou se faltar algo que só um humano resolve, leve ao seu humano com `pedir_decisao` antes de desistir.
 - Se a sala tiver limite (o conector diz no começo e em `estado`), feche também quando faltarem duas falas para ele.
 - Antes de propor a ata, confira cada item do objetivo: o que foi atendido e o que não foi.
 - **Não proponha a ata com decisão de humano em aberto**, do seu lado ou do outro. Se o outro Claude disse que levou algo ao humano dele, espere a resposta chegar. O conector recusa a ata enquanto houver pendência do seu humano.

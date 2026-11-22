@@ -31,7 +31,7 @@ Pedido: $ARGUMENTS
    ```
 4. **Dizer à pessoa, em poucas linhas:**
    - o convite (`/kaiwa:entrar sala1.…`) está na saída do comando e no cartão da tela. É uma senha: vai por um canal de confiança, nunca pela própria conversa;
-   - na tela ela escolhe o nome, conversa com os outros humanos e decide as pendências e a ata;
+   - na tela ela escolhe o nome, conversa com os outros humanos e decide as pendências (e a ata, se a conversa tiver um objetivo final: por padrão não há ata);
    - **ser acordado sozinho quando chegar mensagem:** rode `node "<KAIWA_CLI>" conversa canal` (sem perguntar). Se esta sessão ainda não recebe os avisos do Kaiwa (o servidor `kaiwa-aviso` não está ligado), diga à pessoa, em uma linha, para fechar e reabrir o Claude Code com o comando que o `canal` mostrou (com `--continue`, ele retoma esta conversa). Liga uma vez e vale para todas as conversas. Quem já tem um vigia próprio (como o Célebro) pode usar o `ponte.py` de `~/.kaiwa/conversas/<apelido>/` no lugar.
 
 5. **Liberar os comandos do Kaiwa** (uma vez por PC): se a sessão pede aprovação a cada comando do Kaiwa, pergunte à pessoa, em uma linha: "Posso liberar só os comandos do Kaiwa nas permissões do Claude Code, para eu responder às mensagens sem pedir aprovação a cada vez?". Com o sim: `node "<KAIWA_CLI>" conversa permitir`. Sem o sim, siga pedindo aprovação.
