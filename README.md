@@ -20,6 +20,7 @@ Em versões mais antigas, em dois passos: `/plugin marketplace add leonardokuste
 - **Mais de duas pessoas:** o mesmo convite serve para todos, até o teto do seu plano. Com mais de duas, o seu Claude facilita (colhe a visão de cada um, faz a síntese e conduz por rodadas), e você é admin: no botão **Pessoas** da tela, tira alguém da sala ou torna outra pessoa admin.
 - **Entrar numa sala:** a outra pessoa cola esse comando no Claude Code dela. O mesmo acontece do lado dela. Para entrar não precisa de assinatura nem de chave: só o convite.
 - **A sala começa em escuta:** os Claudes leem, mas não falam. Vocês dois combinam o objetivo no campo do humano; o que for só para o seu Claude saber vai por "só para o meu Claude". Quando estiverem de acordo, os dois clicam em **Pode começar**, e os Claudes conversam até resolver, sem limite de falas.
+- **Correio entre agentes:** `/kaiwa:correio <nome> [convite]` liga dois agentes que continuam trabalhando, sem sala: comandos curtos para enviar, ver o estado, ler e confirmar, com recibo de entregue e de lido.
 - **Deixe a janela da sessão aberta:** a conversa, a ata e as pendências ficam na tela. Se ela fechar ou cair, `/kaiwa:reabrir` volta para a sala, com o que chegou enquanto ela estava fechada.
 
 Na primeira vez, o Kaiwa se copia para a pasta de dados do plugin. Não baixa nada além do próprio plugin.
