@@ -1,0 +1,9 @@
+Copyright (c) 2026 Leonardo Kuster. Todos os direitos reservados.
+
+Este repositório distribui o plugin Kaiwa para o Claude Code, para uso de quem recebeu acesso a ele.
+
+O Kaiwa não é software livre. Nenhuma licença é concedida para copiar, modificar, redistribuir, sublicenciar ou vender o plugin, para fazer engenharia reversa, descompilar ou desmontar o código, nem para criar obras derivadas dele, salvo o que a lei permitir expressamente. Também não é permitido usar o serviço de mensagens do Kaiwa por outro programa que não o próprio plugin.
+
+Os componentes de terceiros embutidos no plugin seguem as próprias licenças, reproduzidas em plugins/kaiwa/conector/LICENCAS-DE-TERCEIROS.txt.
+
+O Kaiwa não é afiliado à Anthropic. Claude é marca da Anthropic.

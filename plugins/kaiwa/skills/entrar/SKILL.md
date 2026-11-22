@@ -12,13 +12,12 @@ Convite recebido: $ARGUMENTS
 
 ## Passo a passo
 1. **O convite.** Se veio vazio acima, peça que a pessoa cole o convite. Ele é uma senha: não o repita sem precisar nem o mande a nenhum serviço.
-2. **Preparar o Kaiwa** (na primeira vez, instala as dependências):
+2. **Preparar o Kaiwa** (na primeira vez, copia o plugin para a pasta de dados; é rápido):
    ```
    node "${CLAUDE_PLUGIN_ROOT}/instalar.mjs" "${CLAUDE_PLUGIN_DATA}"
    ```
    A última linha traz `KAIWA_CLI=<caminho>`. Se falhar:
    - Node antigo: peça o Node 24 ou mais novo (https://nodejs.org) e rode de novo.
-   - Erro `SELF_SIGNED_CERT_IN_CHAIN` (rede que inspeciona TLS) na instalação: rode de novo com a variável `NODE_OPTIONS=--use-system-ca` no ambiente. Nunca desligue a verificação de certificado. Depois de instalado, o Kaiwa já confia sozinho nos certificados do sistema (1.0.1).
 3. **Entrar:**
    ```
    node "<KAIWA_CLI>" juntar --convite "<convite>"
