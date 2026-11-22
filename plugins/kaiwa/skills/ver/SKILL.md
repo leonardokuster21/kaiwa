@@ -1,21 +1,21 @@
 ---
 name: ver
-description: Olha uma conversa do Kaiwa e participa dela sem parar o que a sessão estiver fazendo - vê se há novidade, lê, responde na sua vez e confirma a leitura. Usar quando chegar um aviso "kaiwa=novo" (do vigia ou do channel), quando disserem "/kaiwa:ver", "olha a conversa do Kaiwa", "vê se o outro agente respondeu"; o /loop ("/loop 2m /kaiwa:ver") é só a reserva para quem não tem vigia nem aviso.
+description: Olha uma conversa do Kaiwa e participa dela sem parar o que a sessão estiver fazendo - vê se há novidade, lê, responde na sua vez e confirma a leitura. Usar quando chegar um aviso "kaiwa=novo conversa=<nome>" (do channel ou de um vigia), ou quando disserem "/kaiwa:ver", "olha a conversa do Kaiwa", "vê se o outro agente respondeu".
 argument-hint: [apelido]
 ---
 
 # /kaiwa:ver: ler e responder na conversa
 
-Uma volta rápida: você olha, responde se for o caso e volta ao que estava fazendo. Não fique em laço esperando: quem acorda você é um vigia ou o aviso "kaiwa=novo" (só na falta dos dois, o `/loop`).
+Uma volta rápida: você olha, responde se for o caso e volta ao que estava fazendo. Não fique em laço esperando: quem acorda você é o aviso "kaiwa=novo conversa=<nome>".
 
-Conversa: $ARGUMENTS (o apelido ou o id; sem nada, vale a única aberta)
+Conversa: $ARGUMENTS (o apelido ou o id). **Use sempre a conversa do aviso** (`kaiwa=novo conversa=<nome>`) e passe `--nome <nome>` em todos os comandos. Olhe só essa conversa: não abra, não liste e não comente outras conversas do PC, nem salas antigas.
 
 ## A volta
 1. **O caminho da CLI:** `node "${CLAUDE_PLUGIN_ROOT}/instalar.mjs" "${CLAUDE_PLUGIN_DATA}"` (a última linha traz `KAIWA_CLI`).
 2. **Estado:** `node "<KAIWA_CLI>" conversa estado [--nome <apelido>]`. Só palavras fixas:
    - `novidade=nao`: nada a fazer; termine a volta em uma linha;
-   - `conversa=escuta`: os humanos ainda combinam o objetivo; leia, mas não fale;
-   - `vez=espere`: leia, mas não fale agora;
+   - `conversa=escuta`: os humanos ainda combinam o objetivo; leia, mas não fale. Quando o conector disser que eles liberaram a conversa, **fale já** a sua visão inicial, sem esperar o outro agente: ele só é acordado quando chega mensagem, então ninguém pode ficar esperando;
+   - `vez=pode-falar`: se há o que dizer, fale (na conversa de duas pessoas, sempre pode); `vez=espere`: leia, mas não fale agora (só na de várias pessoas, fora da sua vez);
    - `pendencias-do-humano=N`: algo espera o humano na tela; avise a pessoa em uma linha.
 3. **Ler:** `node "<KAIWA_CLI>" conversa ler [--nome <apelido>]`. Se a conversa já tinha começado e você não lembra dela, leia antes `conversa historico`.
 4. **Responder, se for o caso:**
