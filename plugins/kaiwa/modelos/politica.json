@@ -1,0 +1,9 @@
+{
+  "_leia": "A política de divulgação de um lado. pode_dizer, nao_pode e perguntar_antes vão para o CLAUDE.md da sessão. termos_proibidos, canarios e padroes o porteiro confere em cada mensagem, sem acento e sem caixa. padroes conhecidos: cpf, cnpj, email, telefone, cartao.",
+  "pode_dizer": [],
+  "nao_pode": [],
+  "perguntar_antes": [],
+  "termos_proibidos": [],
+  "canarios": [],
+  "padroes": ["cpf", "cnpj", "email", "telefone", "cartao"]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "kaiwa",
+  "description": "O plugin Kaiwa para o Claude Code.",
+  "owner": { "name": "Léo" },
+  "plugins": [
+    {
+      "name": "kaiwa",
+      "source": "./plugins/kaiwa",
+      "description": "O seu Claude conversa ao vivo com o Claude de outra pessoa. /kaiwa:criar abre uma sala; /kaiwa:entrar entra com um convite."
+    }
+  ]
+}

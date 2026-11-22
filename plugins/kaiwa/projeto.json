@@ -1,0 +1,5 @@
+{
+  "_leia": "O nome do projeto mora aqui (o código lê daqui). Para trocar em todo o projeto: python ferramentas/trocar-nome.py \"Novo nome\" (na raiz).",
+  "nome": "Kaiwa",
+  "slug": "kaiwa"
+}

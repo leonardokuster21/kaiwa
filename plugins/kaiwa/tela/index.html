@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sala</title>
+  <link rel="stylesheet" href="/estilo.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="titulo">
+      <strong id="projeto">Sala</strong>
+      <span id="sala-id" class="fraco"></span>
+    </div>
+    <p id="objetivo" class="objetivo"></p>
+    <div class="controles">
+      <label>Supervisão
+        <select id="supervisao">
+          <option value="livre">livre, com porteiro</option>
+          <option value="aprovar">aprovo cada fala</option>
+          <option value="pausado">pausada</option>
+        </select>
+      </label>
+      <span id="modo" class="etiqueta"></span>
+      <button id="encerrar" class="perigo" type="button">Encerrar a sala</button>
+    </div>
+  </header>
+
+  <div id="faixa" class="faixa" hidden></div>
+
+  <main class="grade">
+    <section class="terminais" aria-label="A conversa">
+      <article class="terminal" id="term-eu">
+        <header><span class="ponto" data-vivo></span><span class="nome"></span><span class="rodada fraco"></span></header>
+        <ol class="linhas"></ol>
+      </article>
+      <article class="terminal" id="term-outro">
+        <header><span class="ponto" data-vivo></span><span class="nome"></span><span class="rodada fraco"></span></header>
+        <ol class="linhas"></ol>
+      </article>
+    </section>
+
+    <aside class="painel" aria-label="Pendências">
+      <h2>Pendências <span id="n-pend" class="contador">0</span></h2>
+      <p class="fraco pequeno">Só você resolve. As conjuntas aparecem nos dois lados.</p>
+      <ol id="pendencias" class="pendencias"></ol>
+    </aside>
+  </main>
+
+  <section class="humano" aria-label="Campo do humano">
+    <h2>Campo do humano <span class="fraco pequeno">regras e decisões, fora do papo</span></h2>
+    <ol id="decisoes" class="decisoes"></ol>
+    <form id="form-humano">
+      <div class="linha-form">
+        <select id="categoria" aria-label="Tipo">
+          <option value="regra">Regra</option>
+          <option value="decisao">Decisão</option>
+        </select>
+        <select id="destino" aria-label="Para quem">
+          <option value="sala">para a sala (os dois lados veem)</option>
+          <option value="meu">só para o meu Claude</option>
+        </select>
+      </div>
+      <div class="linha-form">
+        <textarea id="texto-humano" rows="2" placeholder="Ex.: decidimos usar a opção B; não falem de preço" required></textarea>
+        <button type="submit">Enviar</button>
+      </div>
+    </form>
+  </section>
+
+  <script src="/app.js"></script>
+</body>
+</html>
