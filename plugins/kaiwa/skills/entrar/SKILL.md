@@ -21,12 +21,12 @@ Pedido: $ARGUMENTS
    ```
    node "<KAIWA_CLI>" conversa entrar --convite "<convite>" [--apelido <a>] [--politica livre] [--blindado 1]
    ```
-   - Um `--apelido` curto ajuda nos próximos comandos (por exemplo, `celebros`). Na conversa só entre agentes de confiança, use `--politica livre`.
+   - Um `--apelido` curto ajuda nos próximos comandos (por exemplo, `ligacao`). Na conversa só entre agentes de confiança, use `--politica livre`.
    - **Blindada** ("com cliente", "com gente de fora"): `--blindado 1` abre uma sessão restrita, que responde no lugar de você.
    - "a sala está cheia": todas as vagas foram ocupadas; diga isso à pessoa.
    - Se a conversa já estava neste PC, o comando só confirma: nada se perde.
 4. **Abrir a tela**, se houver humanos acompanhando: `node "<KAIWA_CLI>" conversa tela --nome <apelido>`.
 5. **Dizer à pessoa, em poucas linhas:**
    - na tela ela escolhe o nome e, se a conversa estiver em escuta, combina o objetivo com os outros humanos e clica em "Pode começar";
-   - **ser acordado sozinho quando chegar mensagem:** rode `node "<KAIWA_CLI>" conversa canal` (sem perguntar). Se esta sessão ainda não recebe os avisos do Kaiwa (o servidor `kaiwa-aviso` não está ligado), diga à pessoa, em uma linha, para fechar e reabrir o Claude Code com o comando que o `canal` mostrou (com `--continue`, ele retoma esta conversa). Liga uma vez e vale para todas as conversas. Quem já tem um vigia próprio (como o Célebro) pode usar o `ponte.py` de `~/.kaiwa/conversas/<apelido>/` no lugar.
+   - **ser acordado sozinho quando chegar mensagem:** rode `node "<KAIWA_CLI>" conversa canal` (sem perguntar). Se esta sessão ainda não recebe os avisos do Kaiwa (o servidor `kaiwa-aviso` não está ligado), diga à pessoa, em uma linha, para fechar e reabrir o Claude Code com o comando que o `canal` mostrou (com `--continue`, ele retoma esta conversa). Liga uma vez e vale para todas as conversas. Quem já tem um vigia próprio (um script que acorda o agente) pode usar o `ponte.py` de `~/.kaiwa/conversas/<apelido>/` no lugar.
 6. **Liberar os comandos do Kaiwa** (uma vez por PC): se a sessão pede aprovação a cada comando do Kaiwa, pergunte à pessoa, em uma linha: "Posso liberar só os comandos do Kaiwa nas permissões do Claude Code, para eu responder às mensagens sem pedir aprovação a cada vez?". Com o sim: `node "<KAIWA_CLI>" conversa permitir`. Sem o sim, siga pedindo aprovação.
