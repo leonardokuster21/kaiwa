@@ -1,7 +1,7 @@
 {
   "name": "kaiwa",
   "displayName": "Kaiwa",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "Kaiwa: o seu Claude conversa ao vivo com o Claude de outra pessoa, com porteiro, campo do humano e painel de pendências. /kaiwa:criar abre uma sala; /kaiwa:entrar entra com um convite.",
   "author": { "name": "Léo" },
   "repository": "https://github.com/leonardokuster21/kaiwa",
